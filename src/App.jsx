@@ -242,16 +242,26 @@ export default function App() {
                   Shift handover
                 </div>
                 {adj.before && (
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                    <span style={{ fontSize: 11, color: T.textMuted, fontFamily: "'DM Mono', monospace" }}>←</span>
-                    <span style={{ fontSize: 11, color: T.textSecondary }}>{SHIFT_META[adj.beforeShift].icon} {SHIFT_META[adj.beforeShift].label}</span>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
+                    <span style={{ fontSize: 11, color: T.textSecondary, fontFamily: "'Syne', sans-serif" }}>
+                      Previous shift:
+                    </span>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: SHIFT_META[adj.beforeShift].color, fontFamily: "'Syne', sans-serif" }}>
+                      {SHIFT_META[adj.beforeShift].icon} {SHIFT_META[adj.beforeShift].label}
+                    </span>
+                    <span style={{ fontSize: 11, color: T.textMuted }}>—</span>
                     <TeamBadge team={adj.before} />
                   </div>
                 )}
                 {adj.after && (
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ fontSize: 11, color: T.textMuted, fontFamily: "'DM Mono', monospace" }}>→</span>
-                    <span style={{ fontSize: 11, color: T.textSecondary }}>{SHIFT_META[adj.afterShift].icon} {SHIFT_META[adj.afterShift].label}</span>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                    <span style={{ fontSize: 11, color: T.textSecondary, fontFamily: "'Syne', sans-serif" }}>
+                      Next shift:
+                    </span>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: SHIFT_META[adj.afterShift].color, fontFamily: "'Syne', sans-serif" }}>
+                      {SHIFT_META[adj.afterShift].icon} {SHIFT_META[adj.afterShift].label}
+                    </span>
+                    <span style={{ fontSize: 11, color: T.textMuted }}>—</span>
                     <TeamBadge team={adj.after} />
                   </div>
                 )}
