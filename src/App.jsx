@@ -47,19 +47,27 @@ const CYCLE = [
   "off","off","off","off",
 ];
 
-const TEAM_ANCHORS = {
-  green:  new Date(2025, 4, 25),
-  blue:   new Date(2025, 4, 11),
-  red:    new Date(2025, 4, 18),
-  yellow: new Date(2025, 4,  4),
-};
-
 const TEAM_ORDER = ["yellow","blue","red","green"];
 
+function toDateKey(date) {
+  return date.getFullYear() * 10000 + (date.getMonth() + 1) * 100 + date.getDate();
+}
+
 function getShiftForDate(team, date) {
-  const anchor = TEAM_ANCHORS[team];
-  const normalize = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
-  const diffDays = Math.round((normalize(date) - normalize(anchor)) / 86400000);
+  const anchors = {
+    green:  20250525,
+    blue:   20250511,
+    red:    20250518,
+    yellow: 20250504,
+  };
+  const anchorKey = anchors[team];
+  const anchorDate = new Date(
+    Math.floor(anchorKey / 10000),
+    Math.floor((anchorKey % 10000) / 100) - 1,
+    anchorKey % 100
+  );
+  const targetDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const diffDays = Math.round((targetDate - anchorDate) / 86400000);
   const cycleDay = ((diffDays % 28) + 28) % 28;
   return CYCLE[cycleDay];
 }
@@ -379,6 +387,45 @@ export default function App() {
                 return (
                   <tr key={d} style={{ background: isToday ? T.primaryLight : "transparent" }}>
                     <td style={{ padding: "6px 10px", borderBottom: `1px solid ${T.border}`, fontFamily: "'DM Mono', monospace", color: isToday ? T.primary : T.text, fontWeight: isToday ? 700 : 400 }}>
+                      {date.toLocaleString("en-US", { day: "2-digit", month: "short" })}
+                    </td>
+                    <td style={{ padding: "6px 10px", borderBottom: `1px solid ${T.border}`, color: T.textMuted, fontFamily: "'DM Mono', monospace" }}>{dayLabel}</td>
+                    {["yellow","blue","red","green"].map(team => {
+                      const shift = getShiftForDate(team, date);
+                      const sm = SHIFT_META[shift];
+                      return (
+                        <td key={team} style={{ padding: "6px 10px", borderBottom: `1px solid ${T.border}` }}>
+                          <span style={{ color: sm.color, fontWeight: 700, letterSpacing: "0.06em" }}>{sm.short}</span>
+                        </td>
+                      );
+                    })}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        {/* ── JUNE 2025 VERIFICATION TABLE ── */}
+        <div style={{ background: T.bg, border: `1px solid ${T.border}`, borderRadius: 6, padding: "24px", marginTop: 16, overflowX: "auto" }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, letterSpacing: "0.10em", textTransform: "uppercase", marginBottom: 16, fontFamily: "'Syne', sans-serif" }}>
+            June 2025 — Reference Verification
+          </div>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "'Syne', sans-serif", fontSize: 11 }}>
+            <thead>
+              <tr>
+                {["Date", "Day", "Yellow", "Blue", "Red", "Green"].map(h => (
+                  <th key={h} style={{ textAlign: "left", padding: "6px 10px", borderBottom: `1px solid ${T.border}`, fontSize: 10, fontWeight: 700, color: T.textMuted, letterSpacing: "0.10em", textTransform: "uppercase" }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {Array.from({ length: 30 }, (_, i) => {
+                const date = new Date(2025, 5, i + 1);
+                const dayLabel = date.toLocaleString("en-US", { weekday: "short" });
+                return (
+                  <tr key={i} style={{ background: i % 2 === 0 ? T.surface : "transparent" }}>
+                    <td style={{ padding: "6px 10px", borderBottom: `1px solid ${T.border}`, fontFamily: "'DM Mono', monospace", color: T.text }}>
                       {date.toLocaleString("en-US", { day: "2-digit", month: "short" })}
                     </td>
                     <td style={{ padding: "6px 10px", borderBottom: `1px solid ${T.border}`, color: T.textMuted, fontFamily: "'DM Mono', monospace" }}>{dayLabel}</td>
