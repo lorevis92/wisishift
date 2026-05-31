@@ -68,7 +68,7 @@ function getShiftForDate(team, date) {
   );
   const targetDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
   const diffDays = Math.round((targetDate - anchorDate) / 86400000);
-  const cycleDay = ((diffDays % 28) + 28) % 28;
+  const cycleDay = (((diffDays + 1) % 28) + 28) % 28;
   return CYCLE[cycleDay];
 }
 
