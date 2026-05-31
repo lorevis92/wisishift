@@ -72,10 +72,10 @@ const TEAM_META = {
 };
 
 const SHIFT_META = {
-  morning:   { label: "Mattina",    short: "MAT", icon: "☀️",  time: "06:00 – 14:00", color: "#B87000", bg: "rgba(184,112,0,0.06)",  border: "rgba(184,112,0,0.18)"  },
-  afternoon: { label: "Pomeriggio", short: "POM", icon: "🌤️", time: "14:00 – 22:00", color: "#0277BD", bg: "rgba(2,119,189,0.06)",  border: "rgba(2,119,189,0.18)"  },
-  night:     { label: "Notte",      short: "NOT", icon: "🌙",  time: "22:00 – 06:00", color: "#6B21A8", bg: "rgba(107,33,168,0.06)", border: "rgba(107,33,168,0.18)" },
-  off:       { label: "Riposo",     short: "—",   icon: "😴",  time: "Giorno libero", color: "#AAAAAA", bg: "transparent",           border: T.border                },
+  morning:   { label: "Morning",   short: "MOR", icon: "☀️",  time: "06:00 – 14:00", color: "#B87000", bg: "rgba(184,112,0,0.06)",  border: "rgba(184,112,0,0.18)"  },
+  afternoon: { label: "Afternoon", short: "AFT", icon: "🌤️", time: "14:00 – 22:00", color: "#0277BD", bg: "rgba(2,119,189,0.06)",  border: "rgba(2,119,189,0.18)"  },
+  night:     { label: "Night",     short: "NGT", icon: "🌙",  time: "22:00 – 06:00", color: "#6B21A8", bg: "rgba(107,33,168,0.06)", border: "rgba(107,33,168,0.18)" },
+  off:       { label: "Day Off",   short: "—",   icon: "😴",  time: "Free day",      color: "#AAAAAA", bg: "transparent",           border: T.border                },
 };
 
 function sameDay(a, b) {
@@ -152,7 +152,7 @@ export default function App() {
   if (!selectedTeam) return <Onboarding onSelect={setSelectedTeam} today={today} isMobile={isMobile} />;
 
   const tm = TEAM_META[selectedTeam];
-  const monthName = new Date(viewYear, viewMonth, 1).toLocaleString("it-IT", { month: "long" });
+  const monthName = new Date(viewYear, viewMonth, 1).toLocaleString("en-US", { month: "long" });
   const daysCount = getDaysInMonth(viewYear, viewMonth);
   const firstDay  = getFirstDayOfMonth(viewYear, viewMonth);
   const adj = getAdjacentTeams(selectedTeam, today);
@@ -194,7 +194,7 @@ export default function App() {
               cursor: "pointer", fontFamily: "'Syne', sans-serif",
               letterSpacing: "0.07em", textTransform: "uppercase",
             }}
-          >Cambia team</button>
+          >Change team</button>
         </div>
       </header>
 
@@ -206,7 +206,7 @@ export default function App() {
           borderRadius: 6, padding: "24px", marginBottom: 20,
         }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: T.textSecondary, letterSpacing: "0.10em", textTransform: "uppercase", marginBottom: 14, fontFamily: "'Syne', sans-serif" }}>
-            Oggi — {today.toLocaleString("it-IT", { weekday: "long", day: "numeric", month: "long" })}
+            Today — {today.toLocaleString("en-US", { weekday: "long", day: "numeric", month: "long" })}
           </div>
 
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 16 }}>
@@ -231,7 +231,7 @@ export default function App() {
                 borderRadius: 4, padding: "16px 18px", minWidth: 200,
               }}>
                 <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, letterSpacing: "0.10em", textTransform: "uppercase", marginBottom: 12, fontFamily: "'Syne', sans-serif" }}>
-                  Cambio turno
+                  Shift handover
                 </div>
                 {adj.before && (
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
@@ -265,7 +265,7 @@ export default function App() {
 
           {/* Weekday headers */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 4, marginBottom: 6 }}>
-            {["Lun","Mar","Mer","Gio","Ven","Sab","Dom"].map((d,i) => (
+            {["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map((d,i) => (
               <div key={i} style={{ textAlign: "center", fontSize: 10, fontWeight: 700, color: T.textMuted, padding: "4px 0", textTransform: "uppercase", letterSpacing: "0.08em", fontFamily: "'Syne', sans-serif" }}>{d}</div>
             ))}
           </div>
@@ -311,7 +311,7 @@ export default function App() {
           {/* Legend */}
           <div style={{ borderTop: `1px solid ${T.border}`, marginTop: 20, paddingTop: 16, display: "flex", gap: 12, flexWrap: "wrap" }}>
             <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, letterSpacing: "0.10em", textTransform: "uppercase", fontFamily: "'Syne', sans-serif", width: "100%", marginBottom: 4 }}>
-              Legenda
+              Legend
             </div>
             {Object.entries(SHIFT_META).map(([k, v]) => (
               <div key={k} style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -327,8 +327,8 @@ export default function App() {
         {selectedDay && (() => {
           const shift = getShiftForDate(selectedTeam, selectedDay);
           const dsm = SHIFT_META[shift];
-          const dayName = selectedDay.toLocaleString("it-IT", { weekday: "long" });
-          const dateStr = selectedDay.toLocaleString("it-IT", { day: "numeric", month: "long", year: "numeric" });
+          const dayName = selectedDay.toLocaleString("en-US", { weekday: "long" });
+          const dateStr = selectedDay.toLocaleString("en-US", { day: "numeric", month: "long", year: "numeric" });
           return (
             <div style={{ background: T.bg, border: `1px solid ${T.border}`, borderRadius: 6, padding: "24px", marginTop: 16 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
@@ -392,22 +392,22 @@ function Onboarding({ onSelect, today, isMobile }) {
         {/* Hero */}
         <div style={{ textAlign: "center", padding: isMobile ? "32px 0 36px" : "48px 0 48px" }}>
           <h1 style={{ fontSize: "clamp(28px, 6vw, 52px)", fontWeight: 700, color: T.text, margin: "0 0 0", lineHeight: 1.05, letterSpacing: "0.10em", textTransform: "uppercase", fontFamily: "Georgia, 'Times New Roman', serif" }}>
-            I tuoi turni
+            Your shifts
           </h1>
           <h1 style={{ fontSize: "clamp(28px, 6vw, 52px)", fontWeight: 700, color: T.primary, margin: "0 0 20px", lineHeight: 1.05, letterSpacing: "0.10em", textTransform: "uppercase", fontFamily: "Georgia, 'Times New Roman', serif" }}>
-            sempre con te
+            always with you
           </h1>
           <p style={{ fontSize: 14, color: T.textSecondary, margin: "0 0 8px", lineHeight: 1.75 }}>
-            Seleziona il tuo team per vedere il calendario turni completo.
+            Select your team to view the full shift calendar.
           </p>
           <p style={{ fontSize: 12, color: T.textMuted, margin: 0, fontFamily: "'DM Mono', monospace" }}>
-            La scelta viene salvata automaticamente.
+            Your choice is saved automatically.
           </p>
         </div>
 
         {/* Team cards */}
         <div style={{ fontSize: 11, fontWeight: 700, color: T.textSecondary, letterSpacing: "0.10em", textTransform: "uppercase", marginBottom: 14, fontFamily: "'Syne', sans-serif" }}>
-          Di che colore sei?
+          What's your team color?
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -434,14 +434,14 @@ function Onboarding({ onSelect, today, isMobile }) {
                       Team {tm.name}
                     </div>
                     <div style={{ fontSize: 12, color: T.textSecondary, marginTop: 3, display: "flex", alignItems: "center", gap: 6 }}>
-                      <span>Oggi:</span>
+                      <span>Today:</span>
                       <span style={{ color: sm.color, fontWeight: 700 }}>{sm.icon} {sm.label}</span>
                       <span style={{ fontFamily: "'DM Mono', monospace", color: T.textMuted }}>{sm.time}</span>
                     </div>
                   </div>
                 </div>
                 <span style={{ fontSize: 11, fontWeight: 700, color: T.primary, letterSpacing: "0.08em", textTransform: "uppercase" }}>
-                  Seleziona →
+                  Select →
                 </span>
               </button>
             );
