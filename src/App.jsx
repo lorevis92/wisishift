@@ -80,10 +80,12 @@ const TEAM_META = {
 };
 
 const SHIFT_META = {
-  morning:   { label: "Morning",   short: "MOR", icon: "☀️",  time: "06:00 – 14:00", color: "#B87000", bg: "rgba(184,112,0,0.06)",  border: "rgba(184,112,0,0.18)"  },
-  afternoon: { label: "Afternoon", short: "AFT", icon: "🌤️", time: "14:00 – 22:00", color: "#0277BD", bg: "rgba(2,119,189,0.06)",  border: "rgba(2,119,189,0.18)"  },
-  night:     { label: "Night",     short: "NGT", icon: "🌙",  time: "22:00 – 06:00", color: "#6B21A8", bg: "rgba(107,33,168,0.06)", border: "rgba(107,33,168,0.18)" },
-  off:       { label: "Day Off",   short: "—",   icon: "😴",  time: "Free day",      color: "#AAAAAA", bg: "transparent",           border: T.border                },
+  morning:        { label: "Morning",   short: "MOR", icon: "☀️",  time: "06:00 – 14:00", color: "#B87000", bg: "rgba(184,112,0,0.06)",  border: "rgba(184,112,0,0.18)"  },
+  afternoon:      { label: "Afternoon", short: "AFT", icon: "🌤️", time: "14:00 – 22:00", color: "#0277BD", bg: "rgba(2,119,189,0.06)",  border: "rgba(2,119,189,0.18)"  },
+  night:          { label: "Night",     short: "NGT", icon: "🌙",  time: "22:00 – 06:00", color: "#6B21A8", bg: "rgba(107,33,168,0.06)", border: "rgba(107,33,168,0.18)" },
+  off:            { label: "Day Off",   short: "—",   icon: "😴",  time: "Free day",      color: "#AAAAAA", bg: "transparent",           border: T.border                },
+  morning_sunday: { label: "Morning",   short: "MOR", icon: "☀️",  time: "06:00 – 18:00", color: "#B87000", bg: "rgba(184,112,0,0.06)",  border: "rgba(184,112,0,0.18)"  },
+  night_sunday:   { label: "Night",     short: "NGT", icon: "🌙",  time: "18:00 – 06:00", color: "#6B21A8", bg: "rgba(107,33,168,0.06)", border: "rgba(107,33,168,0.18)" },
 };
 
 function sameDay(a, b) {
@@ -97,7 +99,28 @@ function getFirstDayOfMonth(year, month) {
   return d === 0 ? 6 : d - 1;
 }
 
+function getEffectiveShift(team, date) {
+  const base = getShiftForDate(team, date);
+  if (date.getDay() !== 0) return base;
+  if (base === "morning") return "morning_sunday";
+  if (base === "night")   return "night_sunday";
+  return "off";
+}
+
 function getAdjacentTeams(myTeam, date) {
+  if (date.getDay() === 0) {
+    const myEffective = getEffectiveShift(myTeam, date);
+    if (myEffective === "off") return { before: null, after: null, myShift: "off" };
+    if (myEffective === "morning_sunday") {
+      const after = TEAM_ORDER.find(t => t !== myTeam && getEffectiveShift(t, date) === "night_sunday") || null;
+      return { before: null, after, myShift: "morning_sunday", beforeShift: null, afterShift: "night_sunday" };
+    }
+    if (myEffective === "night_sunday") {
+      const before = TEAM_ORDER.find(t => t !== myTeam && getEffectiveShift(t, date) === "morning_sunday") || null;
+      return { before, after: null, myShift: "night_sunday", beforeShift: "morning_sunday", afterShift: null };
+    }
+    return { before: null, after: null, myShift: myEffective };
+  }
   const myShift = getShiftForDate(myTeam, date);
   if (myShift === "off") return { before: null, after: null, myShift };
   const shiftOrder = ["morning","afternoon","night"];
