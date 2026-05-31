@@ -365,85 +365,78 @@ export default function App() {
           );
         })()}
 
-        {/* ── DEBUG TABLE ── */}
-        <div style={{ background: T.bg, border: `1px solid ${T.border}`, borderRadius: 6, padding: "24px", marginTop: 16, overflowX: "auto" }}>
-          <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, letterSpacing: "0.10em", textTransform: "uppercase", marginBottom: 16, fontFamily: "'Syne', sans-serif" }}>
-            Shift Verification — All Teams
-          </div>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "'Syne', sans-serif", fontSize: 11 }}>
-            <thead>
-              <tr>
-                {["Date", "Day", "Yellow", "Blue", "Red", "Green"].map(h => (
-                  <th key={h} style={{ textAlign: "left", padding: "6px 10px", borderBottom: `1px solid ${T.border}`, fontSize: 10, fontWeight: 700, color: T.textMuted, letterSpacing: "0.10em", textTransform: "uppercase" }}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {Array.from({ length: daysCount }, (_, i) => {
-                const d = i + 1;
-                const date = new Date(viewYear, viewMonth, d);
-                const isToday = sameDay(date, today);
-                const dayLabel = date.toLocaleString("en-US", { weekday: "short" });
-                return (
-                  <tr key={d} style={{ background: isToday ? T.primaryLight : "transparent" }}>
-                    <td style={{ padding: "6px 10px", borderBottom: `1px solid ${T.border}`, fontFamily: "'DM Mono', monospace", color: isToday ? T.primary : T.text, fontWeight: isToday ? 700 : 400 }}>
-                      {date.toLocaleString("en-US", { day: "2-digit", month: "short" })}
-                    </td>
-                    <td style={{ padding: "6px 10px", borderBottom: `1px solid ${T.border}`, color: T.textMuted, fontFamily: "'DM Mono', monospace" }}>{dayLabel}</td>
-                    {["yellow","blue","red","green"].map(team => {
-                      const shift = getShiftForDate(team, date);
-                      const sm = SHIFT_META[shift];
-                      return (
-                        <td key={team} style={{ padding: "6px 10px", borderBottom: `1px solid ${T.border}` }}>
-                          <span style={{ color: sm.color, fontWeight: 700, letterSpacing: "0.06em" }}>{sm.short}</span>
-                        </td>
-                      );
-                    })}
+        {/* ── SHIFT OVERVIEW TABLE ── */}
+        {(() => {
+          const teamColors = { green: "#00996A", blue: "#0277BD", red: "#E8352A", yellow: "#B87000" };
+          const teamBg     = { green: "rgba(0,153,106,0.08)", blue: "rgba(2,119,189,0.08)", red: "rgba(232,53,42,0.08)", yellow: "rgba(184,112,0,0.08)" };
+          const renderBadge = (team) => (
+            <span key={team} style={{
+              background: teamBg[team], color: teamColors[team],
+              border: `1px solid ${teamColors[team]}44`,
+              fontSize: 10, fontWeight: 700, borderRadius: 3, padding: "2px 8px",
+              textTransform: "uppercase", letterSpacing: "0.06em",
+              fontFamily: "'Syne', sans-serif", display: "inline-flex", alignItems: "center", gap: 4,
+            }}>
+              <span style={{ width: 5, height: 5, borderRadius: "50%", background: teamColors[team], display: "inline-block" }} />
+              {team.charAt(0).toUpperCase() + team.slice(1)}
+            </span>
+          );
+          return (
+            <div style={{ background: T.bg, border: `1px solid ${T.border}`, borderRadius: 6, padding: "24px", marginTop: 16, overflowX: "auto" }}>
+              <div style={{ marginBottom: 16 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#666666", letterSpacing: "0.10em", textTransform: "uppercase", fontFamily: "'Syne', sans-serif" }}>
+                  Shift Overview
+                </div>
+                <div style={{ fontSize: 11, color: T.textMuted, marginTop: 4, fontFamily: "'Syne', sans-serif" }}>
+                  Daily team coverage by shift
+                </div>
+              </div>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "'Syne', sans-serif", fontSize: 11 }}>
+                <thead>
+                  <tr>
+                    {["Date", "Day", "Morning", "Afternoon", "Night"].map(h => (
+                      <th key={h} style={{ textAlign: "left", padding: "9px 14px", borderBottom: `1px solid ${T.border}`, fontSize: 10, fontWeight: 700, color: T.textMuted, letterSpacing: "0.10em", textTransform: "uppercase" }}>{h}</th>
+                    ))}
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-
-        {/* ── JUNE 2025 VERIFICATION TABLE ── */}
-        <div style={{ background: T.bg, border: `1px solid ${T.border}`, borderRadius: 6, padding: "24px", marginTop: 16, overflowX: "auto" }}>
-          <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, letterSpacing: "0.10em", textTransform: "uppercase", marginBottom: 16, fontFamily: "'Syne', sans-serif" }}>
-            June 2025 — Reference Verification
-          </div>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "'Syne', sans-serif", fontSize: 11 }}>
-            <thead>
-              <tr>
-                {["Date", "Day", "Yellow", "Blue", "Red", "Green"].map(h => (
-                  <th key={h} style={{ textAlign: "left", padding: "6px 10px", borderBottom: `1px solid ${T.border}`, fontSize: 10, fontWeight: 700, color: T.textMuted, letterSpacing: "0.10em", textTransform: "uppercase" }}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {Array.from({ length: 30 }, (_, i) => {
-                const date = new Date(2025, 5, i + 1);
-                const dayLabel = date.toLocaleString("en-US", { weekday: "short" });
-                return (
-                  <tr key={i} style={{ background: i % 2 === 0 ? T.surface : "transparent" }}>
-                    <td style={{ padding: "6px 10px", borderBottom: `1px solid ${T.border}`, fontFamily: "'DM Mono', monospace", color: T.text }}>
-                      {date.toLocaleString("en-US", { day: "2-digit", month: "short" })}
-                    </td>
-                    <td style={{ padding: "6px 10px", borderBottom: `1px solid ${T.border}`, color: T.textMuted, fontFamily: "'DM Mono', monospace" }}>{dayLabel}</td>
-                    {["yellow","blue","red","green"].map(team => {
-                      const shift = getShiftForDate(team, date);
-                      const sm = SHIFT_META[shift];
-                      return (
-                        <td key={team} style={{ padding: "6px 10px", borderBottom: `1px solid ${T.border}` }}>
-                          <span style={{ color: sm.color, fontWeight: 700, letterSpacing: "0.06em" }}>{sm.short}</span>
+                </thead>
+                <tbody>
+                  {Array.from({ length: daysCount }, (_, i) => {
+                    const d = i + 1;
+                    const date = new Date(viewYear, viewMonth, d);
+                    const isToday = sameDay(date, today);
+                    const isSunday = date.getDay() === 0;
+                    const dayLabel = date.toLocaleString("en-US", { weekday: "short" });
+                    const shiftTeams = { morning: [], afternoon: [], night: [] };
+                    TEAM_ORDER.forEach(team => {
+                      const s = getShiftForDate(team, date);
+                      if (s !== "off" && shiftTeams[s]) shiftTeams[s].push(team);
+                    });
+                    return (
+                      <tr key={d} style={{
+                        background: isToday ? "rgba(232,53,42,0.06)" : i % 2 === 0 ? "#FFFFFF" : "#F8F8F8",
+                        borderLeft: isToday ? "3px solid #E8352A" : "3px solid transparent",
+                      }}>
+                        <td style={{ padding: "9px 14px", borderBottom: `1px solid ${T.border}`, fontFamily: "'DM Mono', monospace", color: isToday ? T.primary : T.text, fontWeight: isToday ? 700 : 400 }}>
+                          {date.toLocaleString("en-US", { day: "2-digit", month: "short" })}
                         </td>
-                      );
-                    })}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                        <td style={{ padding: "9px 14px", borderBottom: `1px solid ${T.border}`, color: T.textMuted, fontFamily: "'DM Mono', monospace" }}>{dayLabel}</td>
+                        <td style={{ padding: "9px 14px", borderBottom: `1px solid ${T.border}` }}>
+                          <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>{shiftTeams.morning.map(renderBadge)}</div>
+                        </td>
+                        <td style={{ padding: "9px 14px", borderBottom: `1px solid ${T.border}` }}>
+                          {!isSunday && <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>{shiftTeams.afternoon.map(renderBadge)}</div>}
+                        </td>
+                        <td style={{ padding: "9px 14px", borderBottom: `1px solid ${T.border}` }}>
+                          <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>{shiftTeams.night.map(renderBadge)}</div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          );
+        })()}
       </main>
 
       {/* ── FOOTER ── */}
