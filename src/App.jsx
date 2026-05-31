@@ -179,9 +179,9 @@ export default function App() {
       <header style={{ background: T.bg, borderBottom: `1px solid ${T.border}`, padding: isMobile ? "8px 12px" : "12px 20px", position: "sticky", top: 0, zIndex: 30 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", maxWidth: 760, margin: "0 auto" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ display: "flex", alignItems: "baseline", gap: 0 }}>
-              <span style={{ fontSize: isMobile ? 18 : 22, fontWeight: 800, color: T.primary, letterSpacing: "0.10em", textTransform: "uppercase", fontFamily: "'Syne', sans-serif" }}>WISI</span>
-              <span style={{ fontSize: isMobile ? 18 : 22, fontWeight: 800, color: T.text, letterSpacing: "0.10em", textTransform: "uppercase", fontFamily: "'Syne', sans-serif" }}>SHIFT</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+              <img src="/logo-wisi.png" height={isMobile ? 28 : 36} alt="WISI" style={{ display: "block" }} />
+              <span style={{ fontWeight: 800, color: "#E8352A", letterSpacing: "0.10em", textTransform: "uppercase", fontFamily: "'Syne', sans-serif", fontSize: isMobile ? 18 : 22 }}>SHIFT</span>
             </div>
             <TeamBadge team={selectedTeam} />
           </div>
@@ -363,7 +363,11 @@ export default function App() {
         <div style={{ maxWidth: 760, margin: "0 auto", display: "flex", flexDirection: isMobile ? "column" : "row", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <span style={{ fontSize: 11, color: T.textSecondary, fontFamily: "'Syne', sans-serif" }}>
-              Part of the <strong>WiSiVERSE</strong> ecosystem
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span>Part of the</span>
+                <img src="/logo-wisiverse.png" height={24} alt="WiSiVERSE" style={{ display: "block" }} />
+                <span>ecosystem</span>
+              </div>
             </span>
           </div>
           <a href="https://wisiverse.com" target="_blank" rel="noopener noreferrer"
@@ -382,9 +386,9 @@ function Onboarding({ onSelect, today, isMobile }) {
     <div style={{ background: T.bg, minHeight: "100vh", color: T.text, fontFamily: "'Syne', system-ui, sans-serif" }}>
       {/* Header */}
       <header style={{ background: T.bg, borderBottom: `1px solid ${T.border}`, padding: isMobile ? "8px 12px" : "12px 20px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
-          <span style={{ fontSize: isMobile ? 18 : 22, fontWeight: 800, color: T.primary, letterSpacing: "0.10em", textTransform: "uppercase", fontFamily: "'Syne', sans-serif" }}>WISI</span>
-          <span style={{ fontSize: isMobile ? 18 : 22, fontWeight: 800, color: T.text, letterSpacing: "0.10em", textTransform: "uppercase", fontFamily: "'Syne', sans-serif" }}>SHIFT</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+          <img src="/logo-wisi.png" height={isMobile ? 28 : 36} alt="WISI" style={{ display: "block" }} />
+          <span style={{ fontWeight: 800, color: "#E8352A", letterSpacing: "0.10em", textTransform: "uppercase", fontFamily: "'Syne', sans-serif", fontSize: isMobile ? 18 : 22 }}>SHIFT</span>
         </div>
       </header>
 
@@ -453,7 +457,11 @@ function Onboarding({ onSelect, today, isMobile }) {
       <footer style={{ borderTop: `1px solid ${T.border}`, background: T.surface, padding: "20px", marginTop: 40 }}>
         <div style={{ maxWidth: 560, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <span style={{ fontSize: 11, color: T.textSecondary, fontFamily: "'Syne', sans-serif" }}>
-            Part of the <strong>WiSiVERSE</strong> ecosystem
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span>Part of the</span>
+                <img src="/logo-wisiverse.png" height={24} alt="WiSiVERSE" style={{ display: "block" }} />
+                <span>ecosystem</span>
+              </div>
           </span>
           <a href="https://wisiverse.com" target="_blank" rel="noopener noreferrer"
             style={{ fontSize: 11, color: T.primary, fontWeight: 700, fontFamily: "'Syne', sans-serif", letterSpacing: "0.08em", textTransform: "uppercase", textDecoration: "none" }}>
