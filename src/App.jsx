@@ -1,122 +1,466 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useState, useEffect } from "react";
 
-function App() {
-  const [count, setCount] = useState(0)
+// ─── FONTS (same as WisiInvesting) ───────────────────────────────────────────
+const fontLink = document.createElement("link");
+fontLink.rel = "stylesheet";
+fontLink.href = "https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap";
+document.head.appendChild(fontLink);
 
-  return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+// ─── THEME (identical to WisiInvesting) ──────────────────────────────────────
+const T = {
+  bg:            "#FFFFFF",
+  surface:       "#F8F8F8",
+  surfaceAlt:    "#F0F0F0",
+  border:        "#E8E8E8",
+  text:          "#111111",
+  textSecondary: "#666666",
+  textMuted:     "#AAAAAA",
+  primary:       "#E8352A",
+  primaryLight:  "rgba(232,53,42,0.06)",
+  primaryBorder: "rgba(232,53,42,0.18)",
+  green:         "#00996A",
+  greenLight:    "rgba(0,153,106,0.06)",
+  blue:          "#0277BD",
+};
 
-      <div className="ticks"></div>
+// ─── SHIFT ENGINE ────────────────────────────────────────────────────────────
+// 28-day cycle:
+// Days  1-3:  Morning   (06-14)
+// Days  4-6:  Afternoon (14-22)
+// Day   7:    OFF
+// Days  8-10: Afternoon (14-22)
+// Days 11-14: Night     (22-06)
+// Days 15-17: OFF
+// Days 18-21: Morning   (06-14)
+// Days 22-24: Night     (22-06)
+// Days 25-28: OFF
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+const CYCLE = [
+  "morning","morning","morning",
+  "afternoon","afternoon","afternoon",
+  "off",
+  "afternoon","afternoon","afternoon",
+  "night","night","night","night",
+  "off","off","off",
+  "morning","morning","morning","morning",
+  "night","night","night",
+  "off","off","off","off",
+];
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+const TEAM_ANCHORS = {
+  green:  new Date(2025, 4, 25),
+  blue:   new Date(2025, 4, 11),
+  red:    new Date(2025, 4, 18),
+  yellow: new Date(2025, 4,  4),
+};
+
+const TEAM_ORDER = ["yellow","blue","red","green"];
+
+function getShiftForDate(team, date) {
+  const anchor = TEAM_ANCHORS[team];
+  const msPerDay = 86400000;
+  const diffDays = Math.floor((date - anchor) / msPerDay);
+  const cycleDay = ((diffDays % 28) + 28) % 28;
+  return CYCLE[cycleDay];
 }
 
-export default App
+const TEAM_META = {
+  green:  { primary: "#00996A", light: "rgba(0,153,106,0.06)",  border: "rgba(0,153,106,0.20)",  name: "Green"  },
+  blue:   { primary: "#0277BD", light: "rgba(2,119,189,0.06)",  border: "rgba(2,119,189,0.20)",  name: "Blue"   },
+  red:    { primary: "#E8352A", light: "rgba(232,53,42,0.06)",  border: "rgba(232,53,42,0.20)",  name: "Red"    },
+  yellow: { primary: "#B87000", light: "rgba(184,112,0,0.06)",  border: "rgba(184,112,0,0.20)",  name: "Yellow" },
+};
+
+const SHIFT_META = {
+  morning:   { label: "Mattina",    short: "MAT", icon: "☀️",  time: "06:00 – 14:00", color: "#B87000", bg: "rgba(184,112,0,0.06)",  border: "rgba(184,112,0,0.18)"  },
+  afternoon: { label: "Pomeriggio", short: "POM", icon: "🌤️", time: "14:00 – 22:00", color: "#0277BD", bg: "rgba(2,119,189,0.06)",  border: "rgba(2,119,189,0.18)"  },
+  night:     { label: "Notte",      short: "NOT", icon: "🌙",  time: "22:00 – 06:00", color: "#6B21A8", bg: "rgba(107,33,168,0.06)", border: "rgba(107,33,168,0.18)" },
+  off:       { label: "Riposo",     short: "—",   icon: "😴",  time: "Giorno libero", color: "#AAAAAA", bg: "transparent",           border: T.border                },
+};
+
+function sameDay(a, b) {
+  return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
+}
+function getDaysInMonth(year, month) {
+  return new Date(year, month+1, 0).getDate();
+}
+function getFirstDayOfMonth(year, month) {
+  let d = new Date(year, month, 1).getDay();
+  return d === 0 ? 6 : d - 1;
+}
+
+function getAdjacentTeams(myTeam, date) {
+  const myShift = getShiftForDate(myTeam, date);
+  if (myShift === "off") return { before: null, after: null, myShift };
+  const shiftOrder = ["morning","afternoon","night"];
+  const myIdx = shiftOrder.indexOf(myShift);
+  const beforeShift = shiftOrder[(myIdx - 1 + 3) % 3];
+  const afterShift  = shiftOrder[(myIdx + 1) % 3];
+  const before = TEAM_ORDER.find(t => t !== myTeam && getShiftForDate(t, date) === beforeShift) || null;
+  const after  = TEAM_ORDER.find(t => t !== myTeam && getShiftForDate(t, date) === afterShift)  || null;
+  return { before, after, myShift, beforeShift, afterShift };
+}
+
+// ─── BADGE COMPONENTS (same style as WisiInvesting) ──────────────────────────
+function ShiftBadge({ shift }) {
+  const sm = SHIFT_META[shift];
+  return (
+    <span style={{
+      background: sm.bg, color: sm.color, border: `1px solid ${sm.border}`,
+      fontSize: 10, fontWeight: 700, borderRadius: 3, padding: "2px 8px",
+      textTransform: "uppercase", letterSpacing: "0.08em",
+      fontFamily: "'Syne', sans-serif",
+    }}>{sm.icon} {sm.label.toUpperCase()}</span>
+  );
+}
+
+function TeamBadge({ team }) {
+  const tm = TEAM_META[team];
+  return (
+    <span style={{
+      background: tm.light, color: tm.primary, border: `1px solid ${tm.border}`,
+      fontSize: 10, fontWeight: 700, borderRadius: 3, padding: "2px 8px",
+      textTransform: "uppercase", letterSpacing: "0.08em",
+      fontFamily: "'Syne', sans-serif",
+      display: "inline-flex", alignItems: "center", gap: 4,
+    }}>
+      <span style={{ width: 6, height: 6, borderRadius: "50%", background: tm.primary, display: "inline-block" }} />
+      TEAM {tm.name.toUpperCase()}
+    </span>
+  );
+}
+
+// ─── MAIN APP ─────────────────────────────────────────────────────────────────
+export default function App() {
+  const today = new Date();
+  const [selectedTeam, setSelectedTeam] = useState(() => localStorage.getItem("wisishift_team") || null);
+  const [viewYear,  setViewYear]  = useState(today.getFullYear());
+  const [viewMonth, setViewMonth] = useState(today.getMonth());
+  const [selectedDay, setSelectedDay] = useState(null);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
+
+  useEffect(() => {
+    const handler = () => setIsMobile(window.innerWidth < 640);
+    window.addEventListener("resize", handler);
+    return () => window.removeEventListener("resize", handler);
+  }, []);
+
+  useEffect(() => {
+    if (selectedTeam) localStorage.setItem("wisishift_team", selectedTeam);
+  }, [selectedTeam]);
+
+  if (!selectedTeam) return <Onboarding onSelect={setSelectedTeam} today={today} isMobile={isMobile} />;
+
+  const tm = TEAM_META[selectedTeam];
+  const monthName = new Date(viewYear, viewMonth, 1).toLocaleString("it-IT", { month: "long" });
+  const daysCount = getDaysInMonth(viewYear, viewMonth);
+  const firstDay  = getFirstDayOfMonth(viewYear, viewMonth);
+  const adj = getAdjacentTeams(selectedTeam, today);
+  const todayShift = getShiftForDate(selectedTeam, today);
+  const sm = SHIFT_META[todayShift];
+
+  const days = [];
+  for (let i = 0; i < firstDay; i++) days.push(null);
+  for (let d = 1; d <= daysCount; d++) days.push(d);
+
+  function prevMonth() {
+    if (viewMonth === 0) { setViewYear(y=>y-1); setViewMonth(11); }
+    else setViewMonth(m=>m-1);
+  }
+  function nextMonth() {
+    if (viewMonth === 11) { setViewYear(y=>y+1); setViewMonth(0); }
+    else setViewMonth(m=>m+1);
+  }
+
+  return (
+    <div style={{ background: T.bg, minHeight: "100vh", color: T.text, fontFamily: "'Syne', system-ui, sans-serif", fontSize: 15 }}>
+
+      {/* ── HEADER ── */}
+      <header style={{ background: T.bg, borderBottom: `1px solid ${T.border}`, padding: isMobile ? "8px 12px" : "12px 20px", position: "sticky", top: 0, zIndex: 30 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", maxWidth: 760, margin: "0 auto" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 0 }}>
+              <span style={{ fontSize: isMobile ? 18 : 22, fontWeight: 800, color: T.primary, letterSpacing: "0.10em", textTransform: "uppercase", fontFamily: "'Syne', sans-serif" }}>WISI</span>
+              <span style={{ fontSize: isMobile ? 18 : 22, fontWeight: 800, color: T.text, letterSpacing: "0.10em", textTransform: "uppercase", fontFamily: "'Syne', sans-serif" }}>SHIFT</span>
+            </div>
+            <TeamBadge team={selectedTeam} />
+          </div>
+          <button
+            onClick={() => setSelectedTeam(null)}
+            style={{
+              background: "transparent", border: `1px solid ${T.border}`,
+              borderRadius: 3, color: T.textSecondary,
+              fontSize: 10, fontWeight: 700, padding: "6px 12px",
+              cursor: "pointer", fontFamily: "'Syne', sans-serif",
+              letterSpacing: "0.07em", textTransform: "uppercase",
+            }}
+          >Cambia team</button>
+        </div>
+      </header>
+
+      <main style={{ padding: isMobile ? "16px" : "28px 20px", maxWidth: 760, margin: "0 auto", boxSizing: "border-box", width: "100%" }}>
+
+        {/* ── TODAY CARD ── */}
+        <div style={{
+          background: T.bg, border: `1px solid ${T.border}`,
+          borderRadius: 6, padding: "24px", marginBottom: 20,
+        }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: T.textSecondary, letterSpacing: "0.10em", textTransform: "uppercase", marginBottom: 14, fontFamily: "'Syne', sans-serif" }}>
+            Oggi — {today.toLocaleString("it-IT", { weekday: "long", day: "numeric", month: "long" })}
+          </div>
+
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 16 }}>
+            {/* Left: today's shift */}
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+                <span style={{ fontSize: 36 }}>{sm.icon}</span>
+                <div>
+                  <div style={{ fontSize: 24, fontWeight: 700, color: sm.color, letterSpacing: "0.04em", fontFamily: "Georgia, 'Times New Roman', serif" }}>
+                    {sm.label}
+                  </div>
+                  <div style={{ fontSize: 13, color: T.textSecondary, fontFamily: "'DM Mono', monospace" }}>{sm.time}</div>
+                </div>
+              </div>
+              <ShiftBadge shift={todayShift} />
+            </div>
+
+            {/* Right: handover info */}
+            {todayShift !== "off" && (adj.before || adj.after) && (
+              <div style={{
+                background: T.surface, border: `1px solid ${T.border}`,
+                borderRadius: 4, padding: "16px 18px", minWidth: 200,
+              }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, letterSpacing: "0.10em", textTransform: "uppercase", marginBottom: 12, fontFamily: "'Syne', sans-serif" }}>
+                  Cambio turno
+                </div>
+                {adj.before && (
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                    <span style={{ fontSize: 11, color: T.textMuted, fontFamily: "'DM Mono', monospace" }}>←</span>
+                    <span style={{ fontSize: 11, color: T.textSecondary }}>{SHIFT_META[adj.beforeShift].icon} {SHIFT_META[adj.beforeShift].label}</span>
+                    <TeamBadge team={adj.before} />
+                  </div>
+                )}
+                {adj.after && (
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontSize: 11, color: T.textMuted, fontFamily: "'DM Mono', monospace" }}>→</span>
+                    <span style={{ fontSize: 11, color: T.textSecondary }}>{SHIFT_META[adj.afterShift].icon} {SHIFT_META[adj.afterShift].label}</span>
+                    <TeamBadge team={adj.after} />
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* ── CALENDAR ── */}
+        <div style={{ background: T.bg, border: `1px solid ${T.border}`, borderRadius: 6, padding: "24px" }}>
+          {/* Month nav */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+            <button onClick={prevMonth} style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 3, color: T.textSecondary, width: 32, height: 32, cursor: "pointer", fontSize: 16, fontFamily: "'Syne', sans-serif" }}>‹</button>
+            <h2 style={{ fontSize: 14, fontWeight: 700, color: T.text, margin: 0, letterSpacing: "0.10em", textTransform: "uppercase", fontFamily: "'Syne', sans-serif" }}>
+              {monthName.charAt(0).toUpperCase()+monthName.slice(1)} {viewYear}
+            </h2>
+            <button onClick={nextMonth} style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 3, color: T.textSecondary, width: 32, height: 32, cursor: "pointer", fontSize: 16, fontFamily: "'Syne', sans-serif" }}>›</button>
+          </div>
+
+          {/* Weekday headers */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 4, marginBottom: 6 }}>
+            {["Lun","Mar","Mer","Gio","Ven","Sab","Dom"].map((d,i) => (
+              <div key={i} style={{ textAlign: "center", fontSize: 10, fontWeight: 700, color: T.textMuted, padding: "4px 0", textTransform: "uppercase", letterSpacing: "0.08em", fontFamily: "'Syne', sans-serif" }}>{d}</div>
+            ))}
+          </div>
+
+          {/* Days grid */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 4 }}>
+            {days.map((day, i) => {
+              if (!day) return <div key={`e-${i}`} />;
+              const date = new Date(viewYear, viewMonth, day);
+              const shift = getShiftForDate(selectedTeam, date);
+              const dsm = SHIFT_META[shift];
+              const isToday = sameDay(date, today);
+              const isSelected = selectedDay && sameDay(date, selectedDay);
+              const isOff = shift === "off";
+
+              return (
+                <div
+                  key={day}
+                  onClick={() => setSelectedDay(isSelected ? null : date)}
+                  style={{
+                    borderRadius: 4,
+                    padding: "6px 4px",
+                    minHeight: isMobile ? 48 : 56,
+                    display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3,
+                    cursor: "pointer",
+                    background: isToday ? T.primary : isSelected ? T.primaryLight : isOff ? "transparent" : dsm.bg,
+                    border: isToday ? `1.5px solid ${T.primary}` : isSelected ? `1.5px solid ${T.primaryBorder}` : `1px solid ${isOff ? T.border : dsm.border}`,
+                    transition: "border-color .12s",
+                  }}
+                >
+                  <div style={{ fontSize: isMobile ? 12 : 13, fontWeight: isToday ? 700 : 400, color: isToday ? "#fff" : isOff ? T.textMuted : T.text, fontFamily: "'DM Mono', monospace" }}>{day}</div>
+                  {!isOff && (
+                    <div style={{ fontSize: 8, fontWeight: 700, color: isToday ? "#fff" : dsm.color, letterSpacing: "0.06em", textTransform: "uppercase", fontFamily: "'Syne', sans-serif" }}>
+                      {dsm.short}
+                    </div>
+                  )}
+                  {!isOff && <div style={{ fontSize: isMobile ? 10 : 12 }}>{dsm.icon}</div>}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Legend */}
+          <div style={{ borderTop: `1px solid ${T.border}`, marginTop: 20, paddingTop: 16, display: "flex", gap: 12, flexWrap: "wrap" }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, letterSpacing: "0.10em", textTransform: "uppercase", fontFamily: "'Syne', sans-serif", width: "100%", marginBottom: 4 }}>
+              Legenda
+            </div>
+            {Object.entries(SHIFT_META).map(([k, v]) => (
+              <div key={k} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ fontSize: 13 }}>{v.icon}</span>
+                <span style={{ fontSize: 11, color: v.color, fontWeight: 700, fontFamily: "'Syne', sans-serif", letterSpacing: "0.04em" }}>{v.label}</span>
+                <span style={{ fontSize: 10, color: T.textMuted, fontFamily: "'DM Mono', monospace" }}>{v.time}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ── DAY DETAIL (inline, same style as ExplorePanel) ── */}
+        {selectedDay && (() => {
+          const shift = getShiftForDate(selectedTeam, selectedDay);
+          const dsm = SHIFT_META[shift];
+          const dayName = selectedDay.toLocaleString("it-IT", { weekday: "long" });
+          const dateStr = selectedDay.toLocaleString("it-IT", { day: "numeric", month: "long", year: "numeric" });
+          return (
+            <div style={{ background: T.bg, border: `1px solid ${T.border}`, borderRadius: 6, padding: "24px", marginTop: 16 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
+                <div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: T.textSecondary, letterSpacing: "0.10em", textTransform: "uppercase", marginBottom: 4, fontFamily: "'Syne', sans-serif", textTransform: "capitalize" }}>
+                    {dayName}
+                  </div>
+                  <div style={{ fontSize: 20, fontWeight: 700, color: T.text, fontFamily: "Georgia, 'Times New Roman', serif", letterSpacing: "0.04em" }}>{dateStr}</div>
+                </div>
+                <button onClick={() => setSelectedDay(null)} style={{ background: "transparent", border: "none", color: T.textMuted, cursor: "pointer", fontSize: 22, lineHeight: 1, padding: 4 }}>×</button>
+              </div>
+
+              <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 20 }}>
+                <span style={{ fontSize: 48 }}>{dsm.icon}</span>
+                <div>
+                  <div style={{ fontSize: 28, fontWeight: 700, color: dsm.color, fontFamily: "Georgia, 'Times New Roman', serif", letterSpacing: "0.04em" }}>{dsm.label}</div>
+                  <div style={{ fontSize: 14, color: T.textSecondary, fontFamily: "'DM Mono', monospace", marginTop: 4 }}>{dsm.time}</div>
+                </div>
+              </div>
+
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <ShiftBadge shift={shift} />
+                <TeamBadge team={selectedTeam} />
+              </div>
+            </div>
+          );
+        })()}
+      </main>
+
+      {/* ── FOOTER ── */}
+      <footer style={{ borderTop: `1px solid ${T.border}`, background: T.surface, padding: isMobile ? "16px" : "20px", marginTop: 40 }}>
+        <div style={{ maxWidth: 760, margin: "0 auto", display: "flex", flexDirection: isMobile ? "column" : "row", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <span style={{ fontSize: 11, color: T.textSecondary, fontFamily: "'Syne', sans-serif" }}>
+              Part of the <strong>WiSiVERSE</strong> ecosystem
+            </span>
+          </div>
+          <a href="https://wisiverse.com" target="_blank" rel="noopener noreferrer"
+            style={{ fontSize: 11, color: T.primary, fontWeight: 700, fontFamily: "'Syne', sans-serif", letterSpacing: "0.08em", textTransform: "uppercase", textDecoration: "none" }}>
+            wisiverse.com →
+          </a>
+        </div>
+      </footer>
+    </div>
+  );
+}
+
+// ─── ONBOARDING ───────────────────────────────────────────────────────────────
+function Onboarding({ onSelect, today, isMobile }) {
+  return (
+    <div style={{ background: T.bg, minHeight: "100vh", color: T.text, fontFamily: "'Syne', system-ui, sans-serif" }}>
+      {/* Header */}
+      <header style={{ background: T.bg, borderBottom: `1px solid ${T.border}`, padding: isMobile ? "8px 12px" : "12px 20px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
+          <span style={{ fontSize: isMobile ? 18 : 22, fontWeight: 800, color: T.primary, letterSpacing: "0.10em", textTransform: "uppercase", fontFamily: "'Syne', sans-serif" }}>WISI</span>
+          <span style={{ fontSize: isMobile ? 18 : 22, fontWeight: 800, color: T.text, letterSpacing: "0.10em", textTransform: "uppercase", fontFamily: "'Syne', sans-serif" }}>SHIFT</span>
+        </div>
+      </header>
+
+      <main style={{ padding: isMobile ? "24px 16px" : "48px 20px", maxWidth: 560, margin: "0 auto" }}>
+        {/* Hero */}
+        <div style={{ textAlign: "center", padding: isMobile ? "32px 0 36px" : "48px 0 48px" }}>
+          <h1 style={{ fontSize: "clamp(28px, 6vw, 52px)", fontWeight: 700, color: T.text, margin: "0 0 0", lineHeight: 1.05, letterSpacing: "0.10em", textTransform: "uppercase", fontFamily: "Georgia, 'Times New Roman', serif" }}>
+            I tuoi turni
+          </h1>
+          <h1 style={{ fontSize: "clamp(28px, 6vw, 52px)", fontWeight: 700, color: T.primary, margin: "0 0 20px", lineHeight: 1.05, letterSpacing: "0.10em", textTransform: "uppercase", fontFamily: "Georgia, 'Times New Roman', serif" }}>
+            sempre con te
+          </h1>
+          <p style={{ fontSize: 14, color: T.textSecondary, margin: "0 0 8px", lineHeight: 1.75 }}>
+            Seleziona il tuo team per vedere il calendario turni completo.
+          </p>
+          <p style={{ fontSize: 12, color: T.textMuted, margin: 0, fontFamily: "'DM Mono', monospace" }}>
+            La scelta viene salvata automaticamente.
+          </p>
+        </div>
+
+        {/* Team cards */}
+        <div style={{ fontSize: 11, fontWeight: 700, color: T.textSecondary, letterSpacing: "0.10em", textTransform: "uppercase", marginBottom: 14, fontFamily: "'Syne', sans-serif" }}>
+          Di che colore sei?
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {Object.entries(TEAM_META).map(([key, tm]) => {
+            const todayShift = getShiftForDate(key, today);
+            const sm = SHIFT_META[todayShift];
+            return (
+              <button
+                key={key}
+                onClick={() => onSelect(key)}
+                style={{
+                  background: T.bg, border: `1px solid ${T.border}`, borderRadius: 6,
+                  padding: "18px 20px", cursor: "pointer", textAlign: "left",
+                  fontFamily: "'Syne', sans-serif", transition: "border-color .15s",
+                  display: "flex", justifyContent: "space-between", alignItems: "center",
+                }}
+                onMouseEnter={e => e.currentTarget.style.borderColor = tm.primary}
+                onMouseLeave={e => e.currentTarget.style.borderColor = T.border}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                  <div style={{ width: 14, height: 14, borderRadius: "50%", background: tm.primary, flexShrink: 0 }} />
+                  <div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: T.text, letterSpacing: "0.06em" }}>
+                      Team {tm.name}
+                    </div>
+                    <div style={{ fontSize: 12, color: T.textSecondary, marginTop: 3, display: "flex", alignItems: "center", gap: 6 }}>
+                      <span>Oggi:</span>
+                      <span style={{ color: sm.color, fontWeight: 700 }}>{sm.icon} {sm.label}</span>
+                      <span style={{ fontFamily: "'DM Mono', monospace", color: T.textMuted }}>{sm.time}</span>
+                    </div>
+                  </div>
+                </div>
+                <span style={{ fontSize: 11, fontWeight: 700, color: T.primary, letterSpacing: "0.08em", textTransform: "uppercase" }}>
+                  Seleziona →
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer style={{ borderTop: `1px solid ${T.border}`, background: T.surface, padding: "20px", marginTop: 40 }}>
+        <div style={{ maxWidth: 560, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <span style={{ fontSize: 11, color: T.textSecondary, fontFamily: "'Syne', sans-serif" }}>
+            Part of the <strong>WiSiVERSE</strong> ecosystem
+          </span>
+          <a href="https://wisiverse.com" target="_blank" rel="noopener noreferrer"
+            style={{ fontSize: 11, color: T.primary, fontWeight: 700, fontFamily: "'Syne', sans-serif", letterSpacing: "0.08em", textTransform: "uppercase", textDecoration: "none" }}>
+            wisiverse.com →
+          </a>
+        </div>
+      </footer>
+    </div>
+  );
+}
