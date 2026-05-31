@@ -180,7 +180,7 @@ export default function App() {
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", maxWidth: 760, margin: "0 auto" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-              <img src="/logo-wisi.png" height={isMobile ? 28 : 36} alt="WISI" style={{ display: "block" }} />
+              <img src="/logo-wisi.png" height={isMobile ? 36 : 48} alt="WISI" style={{ display: "block" }} />
               <span style={{ fontWeight: 800, color: "#E8352A", letterSpacing: "0.10em", textTransform: "uppercase", fontFamily: "'Syne', sans-serif", fontSize: isMobile ? 18 : 22 }}>SHIFT</span>
             </div>
             <TeamBadge team={selectedTeam} />
@@ -387,7 +387,7 @@ function Onboarding({ onSelect, today, isMobile }) {
       {/* Header */}
       <header style={{ background: T.bg, borderBottom: `1px solid ${T.border}`, padding: isMobile ? "8px 12px" : "12px 20px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-          <img src="/logo-wisi.png" height={isMobile ? 28 : 36} alt="WISI" style={{ display: "block" }} />
+          <img src="/logo-wisi.png" height={isMobile ? 36 : 48} alt="WISI" style={{ display: "block" }} />
           <span style={{ fontWeight: 800, color: "#E8352A", letterSpacing: "0.10em", textTransform: "uppercase", fontFamily: "'Syne', sans-serif", fontSize: isMobile ? 18 : 22 }}>SHIFT</span>
         </div>
       </header>
