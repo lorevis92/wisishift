@@ -179,9 +179,9 @@ export default function App() {
       <header style={{ background: T.bg, borderBottom: `1px solid ${T.border}`, padding: isMobile ? "8px 12px" : "12px 20px", position: "sticky", top: 0, zIndex: 30 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", maxWidth: 760, margin: "0 auto" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-              <img src="/logo-wisi.png" height={isMobile ? 36 : 48} alt="WISI" style={{ display: "block" }} />
-              <span style={{ fontWeight: 800, color: "#E8352A", letterSpacing: "0.10em", textTransform: "uppercase", fontFamily: "'Syne', sans-serif", fontSize: isMobile ? 18 : 22 }}>SHIFT</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+              <img src="/logo-wisi.png" height={isMobile ? 40 : 56} alt="WISI" style={{ display: "block" }} />
+              <span style={{ fontWeight: 800, color: "#E8352A", letterSpacing: "0.10em", textTransform: "uppercase", fontFamily: "'Syne', sans-serif", fontSize: isMobile ? 13 : 16 }}>SHIFT</span>
             </div>
             <TeamBadge team={selectedTeam} />
           </div>
@@ -386,9 +386,9 @@ function Onboarding({ onSelect, today, isMobile }) {
     <div style={{ background: T.bg, minHeight: "100vh", color: T.text, fontFamily: "'Syne', system-ui, sans-serif" }}>
       {/* Header */}
       <header style={{ background: T.bg, borderBottom: `1px solid ${T.border}`, padding: isMobile ? "8px 12px" : "12px 20px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-          <img src="/logo-wisi.png" height={isMobile ? 36 : 48} alt="WISI" style={{ display: "block" }} />
-          <span style={{ fontWeight: 800, color: "#E8352A", letterSpacing: "0.10em", textTransform: "uppercase", fontFamily: "'Syne', sans-serif", fontSize: isMobile ? 18 : 22 }}>SHIFT</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+          <img src="/logo-wisi.png" height={isMobile ? 40 : 56} alt="WISI" style={{ display: "block" }} />
+          <span style={{ fontWeight: 800, color: "#E8352A", letterSpacing: "0.10em", textTransform: "uppercase", fontFamily: "'Syne', sans-serif", fontSize: isMobile ? 13 : 16 }}>SHIFT</span>
         </div>
       </header>
 
