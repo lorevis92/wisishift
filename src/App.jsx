@@ -58,8 +58,8 @@ const TEAM_ORDER = ["yellow","blue","red","green"];
 
 function getShiftForDate(team, date) {
   const anchor = TEAM_ANCHORS[team];
-  const msPerDay = 86400000;
-  const diffDays = Math.floor((date - anchor) / msPerDay);
+  const normalize = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const diffDays = Math.round((normalize(date) - normalize(anchor)) / 86400000);
   const cycleDay = ((diffDays % 28) + 28) % 28;
   return CYCLE[cycleDay];
 }
@@ -356,6 +356,47 @@ export default function App() {
             </div>
           );
         })()}
+
+        {/* ── DEBUG TABLE ── */}
+        <div style={{ background: T.bg, border: `1px solid ${T.border}`, borderRadius: 6, padding: "24px", marginTop: 16, overflowX: "auto" }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, letterSpacing: "0.10em", textTransform: "uppercase", marginBottom: 16, fontFamily: "'Syne', sans-serif" }}>
+            Shift Verification — All Teams
+          </div>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "'Syne', sans-serif", fontSize: 11 }}>
+            <thead>
+              <tr>
+                {["Date", "Day", "Yellow", "Blue", "Red", "Green"].map(h => (
+                  <th key={h} style={{ textAlign: "left", padding: "6px 10px", borderBottom: `1px solid ${T.border}`, fontSize: 10, fontWeight: 700, color: T.textMuted, letterSpacing: "0.10em", textTransform: "uppercase" }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {Array.from({ length: daysCount }, (_, i) => {
+                const d = i + 1;
+                const date = new Date(viewYear, viewMonth, d);
+                const isToday = sameDay(date, today);
+                const dayLabel = date.toLocaleString("en-US", { weekday: "short" });
+                return (
+                  <tr key={d} style={{ background: isToday ? T.primaryLight : "transparent" }}>
+                    <td style={{ padding: "6px 10px", borderBottom: `1px solid ${T.border}`, fontFamily: "'DM Mono', monospace", color: isToday ? T.primary : T.text, fontWeight: isToday ? 700 : 400 }}>
+                      {date.toLocaleString("en-US", { day: "2-digit", month: "short" })}
+                    </td>
+                    <td style={{ padding: "6px 10px", borderBottom: `1px solid ${T.border}`, color: T.textMuted, fontFamily: "'DM Mono', monospace" }}>{dayLabel}</td>
+                    {["yellow","blue","red","green"].map(team => {
+                      const shift = getShiftForDate(team, date);
+                      const sm = SHIFT_META[shift];
+                      return (
+                        <td key={team} style={{ padding: "6px 10px", borderBottom: `1px solid ${T.border}` }}>
+                          <span style={{ color: sm.color, fontWeight: 700, letterSpacing: "0.06em" }}>{sm.short}</span>
+                        </td>
+                      );
+                    })}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </main>
 
       {/* ── FOOTER ── */}
