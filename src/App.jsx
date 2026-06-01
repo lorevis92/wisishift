@@ -150,7 +150,7 @@ function TeamBadge({ team }) {
   return (
     <span style={{
       background: tm.light, color: tm.primary, border: `1px solid ${tm.border}`,
-      fontSize: 10, fontWeight: 700, borderRadius: 3, padding: "2px 8px",
+      fontSize: 10, fontWeight: 700, borderRadius: 3, padding: "2px 6px",
       textTransform: "uppercase", letterSpacing: "0.08em",
       fontFamily: "'Syne', sans-serif",
       display: "inline-flex", alignItems: "center", gap: 4,
@@ -306,13 +306,13 @@ export default function App() {
             {todayShift !== "off" && (adj.before || adj.after) && (
               <div style={{
                 background: T.surface, border: `1px solid ${T.border}`,
-                borderRadius: 4, padding: "16px 18px", minWidth: 200,
+                borderRadius: 4, padding: "10px 12px", minWidth: 200,
               }}>
                 <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, letterSpacing: "0.10em", textTransform: "uppercase", marginBottom: 12, fontFamily: "'Syne', sans-serif" }}>
                   Shift handover
                 </div>
                 {adj.before && (
-                  <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 8, flexWrap: "wrap" }}>
+                  <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 6, flexWrap: "wrap" }}>
                     <span style={{ fontSize: 11, color: T.textSecondary, fontFamily: "'Syne', sans-serif", whiteSpace: "nowrap" }}>Previous shift:</span>
                     <span style={{ fontSize: 11, fontWeight: 700, color: SHIFT_META[adj.beforeShift].color, fontFamily: "'Syne', sans-serif", whiteSpace: "nowrap" }}>{SHIFT_META[adj.beforeShift].label}</span>
                     <TeamBadge team={adj.before} />
