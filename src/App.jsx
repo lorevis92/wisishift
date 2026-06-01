@@ -340,55 +340,6 @@ export default function App() {
           </div>
         </div>
 
-        {/* ── MONTHLY HOURS ── */}
-        {(() => {
-          const TARGET = 175.5;
-          const actualHours = Array.from({ length: daysCount }, (_, i) => {
-            const date = new Date(viewYear, viewMonth, i + 1);
-            const shift = getEffectiveShift(selectedTeam, date);
-            if (shift === "morning_sunday" || shift === "night_sunday") return 12;
-            if (shift === "off") return 0;
-            return 8;
-          }).reduce((sum, h) => sum + h, 0);
-          const flex = actualHours - TARGET;
-          const pct = Math.min((actualHours / TARGET) * 100, 100);
-          const overTarget = actualHours >= TARGET;
-          const flexColor = flex > 0 ? "#00996A" : flex < 0 ? "#E8352A" : T.textMuted;
-          const flexSign  = flex > 0 ? "+" : "";
-          return (
-            <div style={{ background: T.bg, border: `1px solid ${T.border}`, borderRadius: 6, padding: "24px", marginBottom: 20 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: T.textSecondary, letterSpacing: "0.10em", textTransform: "uppercase", marginBottom: 16, fontFamily: "'Syne', sans-serif" }}>
-                Monthly Hours — {monthName} {viewYear}
-              </div>
-
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16, marginBottom: 16 }}>
-                {[
-                  { label: "Worked Hours", value: `${actualHours}h`,                       color: T.text     },
-                  { label: "Target",       value: "175.5h",                                 color: T.text     },
-                  { label: "Flex Hours",   value: `${flexSign}${flex.toFixed(1)}h`,         color: flexColor  },
-                ].map(({ label, value, color }) => (
-                  <div key={label}>
-                    <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, letterSpacing: "0.10em", textTransform: "uppercase", fontFamily: "'Syne', sans-serif", marginBottom: 4 }}>
-                      {label}
-                    </div>
-                    <div style={{ fontSize: isMobile ? 18 : 22, fontWeight: 700, color, fontFamily: "'DM Mono', monospace" }}>
-                      {value}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div style={{ background: "#F0F0F0", borderRadius: 2, height: 4, marginBottom: 10, overflow: "hidden" }}>
-                <div style={{ width: `${pct}%`, height: "100%", background: overTarget ? "#00996A" : "#E8352A", borderRadius: 2 }} />
-              </div>
-
-              <div style={{ fontSize: 10, color: T.textMuted, fontFamily: "'Syne', sans-serif" }}>
-                Weekdays: 8h · Sundays: 12h · Monthly target: 175.5h
-              </div>
-            </div>
-          );
-        })()}
-
         {/* ── CALENDAR ── */}
         <div style={{ background: T.bg, border: `1px solid ${T.border}`, borderRadius: 6, padding: "24px" }}>
           {/* Month nav */}
@@ -489,6 +440,55 @@ export default function App() {
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 <ShiftBadge shift={shift} />
                 <TeamBadge team={selectedTeam} />
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* ── MONTHLY HOURS ── */}
+        {(() => {
+          const TARGET = 175.5;
+          const actualHours = Array.from({ length: daysCount }, (_, i) => {
+            const date = new Date(viewYear, viewMonth, i + 1);
+            const shift = getEffectiveShift(selectedTeam, date);
+            if (shift === "morning_sunday" || shift === "night_sunday") return 12;
+            if (shift === "off") return 0;
+            return 8;
+          }).reduce((sum, h) => sum + h, 0);
+          const flex = actualHours - TARGET;
+          const pct = Math.min((actualHours / TARGET) * 100, 100);
+          const overTarget = actualHours >= TARGET;
+          const flexColor = flex > 0 ? "#00996A" : flex < 0 ? "#E8352A" : T.textMuted;
+          const flexSign  = flex > 0 ? "+" : "";
+          return (
+            <div style={{ background: T.bg, border: `1px solid ${T.border}`, borderRadius: 6, padding: "24px", marginTop: 16 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: T.textSecondary, letterSpacing: "0.10em", textTransform: "uppercase", marginBottom: 16, fontFamily: "'Syne', sans-serif" }}>
+                Monthly Hours — {monthName} {viewYear}
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16, marginBottom: 16 }}>
+                {[
+                  { label: "You Will Work", value: `${actualHours}h`,               color: T.text    },
+                  { label: "Target",        value: "175.5h",                         color: T.text    },
+                  { label: "Flex Hours",    value: `${flexSign}${flex.toFixed(1)}h`, color: flexColor },
+                ].map(({ label, value, color }) => (
+                  <div key={label}>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, letterSpacing: "0.10em", textTransform: "uppercase", fontFamily: "'Syne', sans-serif", marginBottom: 4 }}>
+                      {label}
+                    </div>
+                    <div style={{ fontSize: isMobile ? 18 : 22, fontWeight: 700, color, fontFamily: "'DM Mono', monospace" }}>
+                      {value}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ background: "#F0F0F0", borderRadius: 2, height: 4, marginBottom: 10, overflow: "hidden" }}>
+                <div style={{ width: `${pct}%`, height: "100%", background: overTarget ? "#00996A" : "#E8352A", borderRadius: 2 }} />
+              </div>
+
+              <div style={{ fontSize: 10, color: T.textMuted, fontFamily: "'Syne', sans-serif" }}>
+                Weekdays: 8h · Sundays: 12h · Monthly target: 175.5h
               </div>
             </div>
           );
