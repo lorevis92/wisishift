@@ -18,10 +18,11 @@ export default defineConfig({
         orientation: 'portrait',
         scope: '/',
         start_url: '/',
+        prefer_related_applications: false,
         icons: [
-          { src: 'icon.png', sizes: '192x192', type: 'image/png' },
-          { src: 'icon.png', sizes: '512x512', type: 'image/png' },
-          { src: 'icon.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
+          { src: 'icon-app.png', sizes: '192x192', type: 'image/png' },
+          { src: 'icon-app.png', sizes: '512x512', type: 'image/png' },
+          { src: 'icon-app.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' }
         ]
       }
     })
