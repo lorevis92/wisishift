@@ -171,6 +171,7 @@ export default function App() {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
   const [installPrompt, setInstallPrompt] = useState(null);
   const [installState, setInstallState] = useState('idle');
+  const [shiftOverviewOpen, setShiftOverviewOpen] = useState(false);
 
   useEffect(() => {
     const handler = () => setIsMobile(window.innerWidth < 640);
@@ -460,59 +461,126 @@ export default function App() {
               {team.charAt(0).toUpperCase() + team.slice(1)}
             </span>
           );
+          const buildShiftTeams = (date) => {
+            const shiftTeams = { morning: [], afternoon: [], night: [] };
+            TEAM_ORDER.forEach(team => {
+              const s = getShiftForDate(team, date);
+              if (s !== "off" && shiftTeams[s]) shiftTeams[s].push(team);
+            });
+            return shiftTeams;
+          };
           return (
-            <div style={{ background: T.bg, border: `1px solid ${T.border}`, borderRadius: 6, padding: "24px", marginTop: 16, overflowX: "auto" }}>
-              <div style={{ marginBottom: 16 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: "#666666", letterSpacing: "0.10em", textTransform: "uppercase", fontFamily: "'Syne', sans-serif" }}>
-                  Shift Overview
+            <div style={{ background: T.bg, border: `1px solid ${T.border}`, borderRadius: 6, marginTop: 16 }}>
+              {/* Toggle header */}
+              <button
+                onClick={() => setShiftOverviewOpen(o => !o)}
+                style={{
+                  width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
+                  padding: "16px 24px", background: "transparent", border: "none", cursor: "pointer",
+                  fontFamily: "'Syne', sans-serif",
+                }}
+              >
+                <div style={{ textAlign: "left" }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "#666666", letterSpacing: "0.10em", textTransform: "uppercase" }}>
+                    Shift Overview
+                  </div>
+                  <div style={{ fontSize: 11, color: T.textMuted, marginTop: 2 }}>
+                    Daily team coverage by shift
+                  </div>
                 </div>
-                <div style={{ fontSize: 11, color: T.textMuted, marginTop: 4, fontFamily: "'Syne', sans-serif" }}>
-                  Daily team coverage by shift
-                </div>
-              </div>
-              <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "'Syne', sans-serif", fontSize: 11 }}>
-                <thead>
-                  <tr>
-                    {["Date", "Day", "Morning", "Afternoon", "Night"].map(h => (
-                      <th key={h} style={{ textAlign: "left", padding: "9px 14px", borderBottom: `1px solid ${T.border}`, fontSize: 10, fontWeight: 700, color: T.textMuted, letterSpacing: "0.10em", textTransform: "uppercase" }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
+                <span style={{ fontSize: 11, fontWeight: 700, color: "#666666", letterSpacing: "0.10em", textTransform: "uppercase", whiteSpace: "nowrap" }}>
+                  {shiftOverviewOpen ? "▲ Hide" : "▼ Show"}
+                </span>
+              </button>
+
+              {shiftOverviewOpen && (isMobile ? (
+                /* ── Mobile: day cards ── */
+                <div style={{ padding: "0 16px 16px", display: "flex", flexDirection: "column", gap: 8, borderTop: `1px solid ${T.border}` }}>
                   {Array.from({ length: daysCount }, (_, i) => {
                     const d = i + 1;
                     const date = new Date(viewYear, viewMonth, d);
                     const isToday = sameDay(date, today);
                     const isSunday = date.getDay() === 0;
-                    const dayLabel = date.toLocaleString("en-US", { weekday: "short" });
-                    const shiftTeams = { morning: [], afternoon: [], night: [] };
-                    TEAM_ORDER.forEach(team => {
-                      const s = getShiftForDate(team, date);
-                      if (s !== "off" && shiftTeams[s]) shiftTeams[s].push(team);
-                    });
+                    const shiftTeams = buildShiftTeams(date);
+                    const rows = isSunday
+                      ? [{ key: "morning", sm: SHIFT_META.morning_sunday }, { key: "night", sm: SHIFT_META.night_sunday }]
+                      : [{ key: "morning", sm: SHIFT_META.morning }, { key: "afternoon", sm: SHIFT_META.afternoon }, { key: "night", sm: SHIFT_META.night }];
                     return (
-                      <tr key={d} style={{
-                        background: isToday ? "rgba(232,53,42,0.06)" : i % 2 === 0 ? "#FFFFFF" : "#F8F8F8",
-                        borderLeft: isToday ? "3px solid #E8352A" : "3px solid transparent",
+                      <div key={d} style={{
+                        background: isToday ? "rgba(232,53,42,0.06)" : "#FFFFFF",
+                        border: `1px solid ${T.border}`,
+                        borderLeft: isToday ? "3px solid #E8352A" : `1px solid ${T.border}`,
+                        borderRadius: 4, padding: "12px 16px", marginTop: i === 0 ? 12 : 0,
                       }}>
-                        <td style={{ padding: "9px 14px", borderBottom: `1px solid ${T.border}`, fontFamily: "'DM Mono', monospace", color: isToday ? T.primary : T.text, fontWeight: isToday ? 700 : 400 }}>
-                          {date.toLocaleString("en-US", { day: "2-digit", month: "short" })}
-                        </td>
-                        <td style={{ padding: "9px 14px", borderBottom: `1px solid ${T.border}`, color: T.textMuted, fontFamily: "'DM Mono', monospace" }}>{dayLabel}</td>
-                        <td style={{ padding: "9px 14px", borderBottom: `1px solid ${T.border}` }}>
-                          <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>{shiftTeams.morning.map(renderBadge)}</div>
-                        </td>
-                        <td style={{ padding: "9px 14px", borderBottom: `1px solid ${T.border}` }}>
-                          {!isSunday && <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>{shiftTeams.afternoon.map(renderBadge)}</div>}
-                        </td>
-                        <td style={{ padding: "9px 14px", borderBottom: `1px solid ${T.border}` }}>
-                          <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>{shiftTeams.night.map(renderBadge)}</div>
-                        </td>
-                      </tr>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                          <span style={{ fontSize: 12, fontWeight: 700, color: isToday ? T.primary : T.text, fontFamily: "'DM Mono', monospace" }}>
+                            {date.toLocaleString("en-US", { day: "2-digit", month: "short" })}
+                          </span>
+                          <span style={{ fontSize: 11, color: T.textMuted, fontFamily: "'DM Mono', monospace" }}>
+                            {date.toLocaleString("en-US", { weekday: "short" })}
+                          </span>
+                        </div>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                          {rows.map(({ key, sm }) => (
+                            <div key={key} style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                              <span style={{ fontSize: 11, color: sm.color, fontWeight: 700, fontFamily: "'Syne', sans-serif", display: "flex", alignItems: "center", gap: 4 }}>
+                                {sm.icon} {sm.label}
+                              </span>
+                              <div style={{ display: "flex", gap: 4, flexWrap: "wrap", justifyContent: "flex-end" }}>
+                                {shiftTeams[key].length > 0 ? shiftTeams[key].map(renderBadge) : <span style={{ fontSize: 10, color: T.textMuted }}>—</span>}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     );
                   })}
-                </tbody>
-              </table>
+                </div>
+              ) : (
+                /* ── Desktop: table ── */
+                <div style={{ overflowX: "auto", borderTop: `1px solid ${T.border}` }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "'Syne', sans-serif", fontSize: 11 }}>
+                    <thead>
+                      <tr>
+                        {["Date", "Day", "Morning", "Afternoon", "Night"].map(h => (
+                          <th key={h} style={{ textAlign: "left", padding: "9px 14px", borderBottom: `1px solid ${T.border}`, fontSize: 10, fontWeight: 700, color: T.textMuted, letterSpacing: "0.10em", textTransform: "uppercase" }}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {Array.from({ length: daysCount }, (_, i) => {
+                        const d = i + 1;
+                        const date = new Date(viewYear, viewMonth, d);
+                        const isToday = sameDay(date, today);
+                        const isSunday = date.getDay() === 0;
+                        const shiftTeams = buildShiftTeams(date);
+                        return (
+                          <tr key={d} style={{
+                            background: isToday ? "rgba(232,53,42,0.06)" : i % 2 === 0 ? "#FFFFFF" : "#F8F8F8",
+                            borderLeft: isToday ? "3px solid #E8352A" : "3px solid transparent",
+                          }}>
+                            <td style={{ padding: "9px 14px", borderBottom: `1px solid ${T.border}`, fontFamily: "'DM Mono', monospace", color: isToday ? T.primary : T.text, fontWeight: isToday ? 700 : 400 }}>
+                              {date.toLocaleString("en-US", { day: "2-digit", month: "short" })}
+                            </td>
+                            <td style={{ padding: "9px 14px", borderBottom: `1px solid ${T.border}`, color: T.textMuted, fontFamily: "'DM Mono', monospace" }}>
+                              {date.toLocaleString("en-US", { weekday: "short" })}
+                            </td>
+                            <td style={{ padding: "9px 14px", borderBottom: `1px solid ${T.border}` }}>
+                              <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>{shiftTeams.morning.map(renderBadge)}</div>
+                            </td>
+                            <td style={{ padding: "9px 14px", borderBottom: `1px solid ${T.border}` }}>
+                              {!isSunday && <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>{shiftTeams.afternoon.map(renderBadge)}</div>}
+                            </td>
+                            <td style={{ padding: "9px 14px", borderBottom: `1px solid ${T.border}` }}>
+                              <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>{shiftTeams.night.map(renderBadge)}</div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              ))}
             </div>
           );
         })()}
