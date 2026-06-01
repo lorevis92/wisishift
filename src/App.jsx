@@ -312,25 +312,17 @@ export default function App() {
                   Shift handover
                 </div>
                 {adj.before && (
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
-                    <span style={{ fontSize: 11, color: T.textSecondary, fontFamily: "'Syne', sans-serif" }}>
-                      Previous shift:
-                    </span>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: SHIFT_META[adj.beforeShift].color, fontFamily: "'Syne', sans-serif" }}>
-                      {SHIFT_META[adj.beforeShift].icon} {SHIFT_META[adj.beforeShift].label}
-                    </span>
+                  <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 8, flexWrap: "wrap" }}>
+                    <span style={{ fontSize: 11, color: T.textSecondary, fontFamily: "'Syne', sans-serif", whiteSpace: "nowrap" }}>Previous shift:</span>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: SHIFT_META[adj.beforeShift].color, fontFamily: "'Syne', sans-serif", whiteSpace: "nowrap" }}>{SHIFT_META[adj.beforeShift].icon} {SHIFT_META[adj.beforeShift].label}</span>
                     <span style={{ fontSize: 11, color: T.textMuted }}>—</span>
                     <TeamBadge team={adj.before} />
                   </div>
                 )}
                 {adj.after && (
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                    <span style={{ fontSize: 11, color: T.textSecondary, fontFamily: "'Syne', sans-serif" }}>
-                      Next shift:
-                    </span>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: SHIFT_META[adj.afterShift].color, fontFamily: "'Syne', sans-serif" }}>
-                      {SHIFT_META[adj.afterShift].icon} {SHIFT_META[adj.afterShift].label}
-                    </span>
+                  <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+                    <span style={{ fontSize: 11, color: T.textSecondary, fontFamily: "'Syne', sans-serif", whiteSpace: "nowrap" }}>Next shift:</span>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: SHIFT_META[adj.afterShift].color, fontFamily: "'Syne', sans-serif", whiteSpace: "nowrap" }}>{SHIFT_META[adj.afterShift].icon} {SHIFT_META[adj.afterShift].label}</span>
                     <span style={{ fontSize: 11, color: T.textMuted }}>—</span>
                     <TeamBadge team={adj.after} />
                   </div>
@@ -396,19 +388,6 @@ export default function App() {
             })}
           </div>
 
-          {/* Legend */}
-          <div style={{ borderTop: `1px solid ${T.border}`, marginTop: 20, paddingTop: 16, display: "flex", gap: 12, flexWrap: "wrap" }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, letterSpacing: "0.10em", textTransform: "uppercase", fontFamily: "'Syne', sans-serif", width: "100%", marginBottom: 4 }}>
-              Legend
-            </div>
-            {["morning","afternoon","night","off"].map(k => { const v = SHIFT_META[k]; return (
-              <div key={k} style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <span style={{ fontSize: 13 }}>{v.icon}</span>
-                <span style={{ fontSize: 11, color: v.color, fontWeight: 700, fontFamily: "'Syne', sans-serif", letterSpacing: "0.04em" }}>{v.label}</span>
-                <span style={{ fontSize: 10, color: T.textMuted, fontFamily: "'DM Mono', monospace" }}>{v.time}</span>
-              </div>
-            ); })}
-          </div>
         </div>
 
         {/* ── DAY DETAIL (inline, same style as ExplorePanel) ── */}
