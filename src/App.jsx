@@ -314,16 +314,14 @@ export default function App() {
                 {adj.before && (
                   <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 8, flexWrap: "wrap" }}>
                     <span style={{ fontSize: 11, color: T.textSecondary, fontFamily: "'Syne', sans-serif", whiteSpace: "nowrap" }}>Previous shift:</span>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: SHIFT_META[adj.beforeShift].color, fontFamily: "'Syne', sans-serif", whiteSpace: "nowrap" }}>{SHIFT_META[adj.beforeShift].icon} {SHIFT_META[adj.beforeShift].label}</span>
-                    <span style={{ fontSize: 11, color: T.textMuted }}>—</span>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: SHIFT_META[adj.beforeShift].color, fontFamily: "'Syne', sans-serif", whiteSpace: "nowrap" }}>{SHIFT_META[adj.beforeShift].label}</span>
                     <TeamBadge team={adj.before} />
                   </div>
                 )}
                 {adj.after && (
                   <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
                     <span style={{ fontSize: 11, color: T.textSecondary, fontFamily: "'Syne', sans-serif", whiteSpace: "nowrap" }}>Next shift:</span>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: SHIFT_META[adj.afterShift].color, fontFamily: "'Syne', sans-serif", whiteSpace: "nowrap" }}>{SHIFT_META[adj.afterShift].icon} {SHIFT_META[adj.afterShift].label}</span>
-                    <span style={{ fontSize: 11, color: T.textMuted }}>—</span>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: SHIFT_META[adj.afterShift].color, fontFamily: "'Syne', sans-serif", whiteSpace: "nowrap" }}>{SHIFT_META[adj.afterShift].label}</span>
                     <TeamBadge team={adj.after} />
                   </div>
                 )}
