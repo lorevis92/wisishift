@@ -306,7 +306,7 @@ export default function App() {
             {todayShift !== "off" && (adj.before || adj.after) && (
               <div style={{
                 background: T.surface, border: `1px solid ${T.border}`,
-                borderRadius: 4, padding: "10px 12px", minWidth: 200,
+                borderRadius: 4, padding: "10px 12px", minWidth: 200, width: "100%", alignSelf: "stretch",
               }}>
                 <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, letterSpacing: "0.10em", textTransform: "uppercase", marginBottom: 12, fontFamily: "'Syne', sans-serif" }}>
                   Shift handover
