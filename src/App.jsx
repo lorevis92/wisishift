@@ -169,6 +169,8 @@ export default function App() {
   const [viewMonth, setViewMonth] = useState(today.getMonth());
   const [selectedDay, setSelectedDay] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
+  const [installPrompt, setInstallPrompt] = useState(null);
+  const [installState, setInstallState] = useState('idle');
 
   useEffect(() => {
     const handler = () => setIsMobile(window.innerWidth < 640);
@@ -179,6 +181,12 @@ export default function App() {
   useEffect(() => {
     if (selectedTeam) localStorage.setItem("wisishift_team", selectedTeam);
   }, [selectedTeam]);
+
+  useEffect(() => {
+    const handler = (e) => { e.preventDefault(); setInstallPrompt(e); };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
 
   if (!selectedTeam) return <Onboarding onSelect={setSelectedTeam} today={today} isMobile={isMobile} />;
 
@@ -216,16 +224,51 @@ export default function App() {
             </div>
             <TeamBadge team={selectedTeam} />
           </div>
-          <button
-            onClick={() => setSelectedTeam(null)}
-            style={{
-              background: "transparent", border: `1px solid ${T.border}`,
-              borderRadius: 3, color: T.textSecondary,
-              fontSize: 10, fontWeight: 700, padding: "6px 12px",
-              cursor: "pointer", fontFamily: "'Syne', sans-serif",
-              letterSpacing: "0.07em", textTransform: "uppercase",
-            }}
-          >Change team</button>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            {installPrompt && (
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <button
+                  onClick={async () => {
+                    setInstallState('installing');
+                    installPrompt.prompt();
+                    const { outcome } = await installPrompt.userChoice;
+                    if (outcome === 'accepted') {
+                      setInstallState('done');
+                    } else {
+                      setInstallState('error');
+                    }
+                    setTimeout(() => { setInstallState('idle'); setInstallPrompt(null); }, 3000);
+                  }}
+                  style={{
+                    background: T.primary, border: "none",
+                    borderRadius: 3, color: "#fff",
+                    fontSize: 10, fontWeight: 700, padding: "6px 12px",
+                    cursor: "pointer", fontFamily: "'Syne', sans-serif",
+                    letterSpacing: "0.07em", textTransform: "uppercase",
+                  }}
+                >Install App</button>
+                {installState === 'installing' && (
+                  <span style={{ fontSize: 10, color: T.textSecondary, fontFamily: "'Syne', sans-serif" }}>Installing...</span>
+                )}
+                {installState === 'done' && (
+                  <span style={{ fontSize: 10, color: T.green, fontWeight: 700, fontFamily: "'Syne', sans-serif" }}>✓ Installed!</span>
+                )}
+                {installState === 'error' && (
+                  <span style={{ fontSize: 10, color: T.textMuted, fontFamily: "'Syne', sans-serif" }}>Dismissed</span>
+                )}
+              </div>
+            )}
+            <button
+              onClick={() => setSelectedTeam(null)}
+              style={{
+                background: "transparent", border: `1px solid ${T.border}`,
+                borderRadius: 3, color: T.textSecondary,
+                fontSize: 10, fontWeight: 700, padding: "6px 12px",
+                cursor: "pointer", fontFamily: "'Syne', sans-serif",
+                letterSpacing: "0.07em", textTransform: "uppercase",
+              }}
+            >Change team</button>
+          </div>
         </div>
       </header>
 
