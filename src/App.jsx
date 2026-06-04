@@ -172,6 +172,7 @@ export default function App() {
   const [installPrompt, setInstallPrompt] = useState(null);
   const [installState, setInstallState] = useState('idle');
   const [shiftOverviewOpen, setShiftOverviewOpen] = useState(false);
+  const [role, setRole] = useState(() => localStorage.getItem('wisishift_role') || 'opr');
 
   useEffect(() => {
     const handler = () => setIsMobile(window.innerWidth < 640);
@@ -182,6 +183,10 @@ export default function App() {
   useEffect(() => {
     if (selectedTeam) localStorage.setItem("wisishift_team", selectedTeam);
   }, [selectedTeam]);
+
+  useEffect(() => {
+    localStorage.setItem('wisishift_role', role);
+  }, [role]);
 
   useEffect(() => {
     const handler = (e) => { e.preventDefault(); setInstallPrompt(e); };
@@ -424,7 +429,7 @@ export default function App() {
 
         {/* ── MONTHLY HOURS ── */}
         {(() => {
-          const TARGET = 175.5;
+          const target = role === 'ms' ? 178 : 175.5;
           const actualHours = Array.from({ length: daysCount }, (_, i) => {
             const date = new Date(viewYear, viewMonth, i + 1);
             const shift = getEffectiveShift(selectedTeam, date);
@@ -432,21 +437,31 @@ export default function App() {
             if (shift === "off") return 0;
             return 8;
           }).reduce((sum, h) => sum + h, 0);
-          const flex = actualHours - TARGET;
-          const pct = Math.min((actualHours / TARGET) * 100, 100);
-          const overTarget = actualHours >= TARGET;
+          const flex = actualHours - target;
+          const pct = Math.min((actualHours / target) * 100, 100);
+          const overTarget = actualHours >= target;
           const flexColor = flex > 0 ? "#00996A" : flex < 0 ? "#E8352A" : T.textMuted;
           const flexSign  = flex > 0 ? "+" : "";
+          const roleToggleBase = { fontFamily: "'Syne', sans-serif", fontSize: 10, fontWeight: 700, textTransform: "uppercase", border: "1px solid #E8E8E8", borderRadius: 3, padding: "4px 10px", cursor: "pointer", letterSpacing: "0.05em" };
           return (
             <div style={{ background: T.bg, border: `1px solid ${T.border}`, borderRadius: 6, padding: "24px", marginTop: 16 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: T.textSecondary, letterSpacing: "0.10em", textTransform: "uppercase", marginBottom: 16, fontFamily: "'Syne', sans-serif" }}>
-                Monthly Hours — {monthName} {viewYear}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: T.textSecondary, letterSpacing: "0.10em", textTransform: "uppercase", fontFamily: "'Syne', sans-serif" }}>
+                  Monthly Hours — {monthName} {viewYear}
+                </div>
+                <div style={{ display: "flex", gap: 4 }}>
+                  {['opr', 'ms'].map(r => (
+                    <button key={r} onClick={() => setRole(r)} style={{ ...roleToggleBase, background: role === r ? "#E8352A" : "#F8F8F8", color: role === r ? "#FFFFFF" : "#666666" }}>
+                      {r === 'opr' ? 'Opr.' : 'MS'}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16, marginBottom: 16 }}>
                 {[
                   { label: "You Will Work", value: `${actualHours}h`,               color: T.text    },
-                  { label: "Target",        value: "175.5h",                         color: T.text    },
+                  { label: "Target",        value: `${target}h`,                     color: T.text    },
                   { label: "Flex Hours",    value: `${flexSign}${flex.toFixed(1)}h`, color: flexColor },
                 ].map(({ label, value, color }) => (
                   <div key={label}>
@@ -465,7 +480,7 @@ export default function App() {
               </div>
 
               <div style={{ fontSize: 10, color: T.textMuted, fontFamily: "'Syne', sans-serif" }}>
-                Weekdays: 8h · Sundays: 12h · Monthly target: 175.5h
+                Weekdays: 8h · Sundays: 12h · Monthly target: {target}h
               </div>
             </div>
           );
