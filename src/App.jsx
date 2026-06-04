@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useLayoutEffect } from "react";
 
 // ─── FONTS (same as WisiInvesting) ───────────────────────────────────────────
 const fontLink = document.createElement("link");
@@ -195,6 +195,33 @@ export default function App() {
     }
   }, [selectedDay, isMobile]);
 
+  const [popoverRect, setPopoverRect] = useState(null);
+  const popoverRef = useRef(null);
+
+  useEffect(() => {
+    if (!popoverRect) return;
+    const onKey = (e) => { if (e.key === 'Escape') { setSelectedDay(null); setPopoverRect(null); } };
+    const onDown = (e) => { if (popoverRef.current && !popoverRef.current.contains(e.target)) { setSelectedDay(null); setPopoverRect(null); } };
+    document.addEventListener('keydown', onKey);
+    document.addEventListener('mousedown', onDown);
+    return () => { document.removeEventListener('keydown', onKey); document.removeEventListener('mousedown', onDown); };
+  }, [popoverRect]);
+
+  useLayoutEffect(() => {
+    if (!popoverRect || !popoverRef.current) return;
+    const el = popoverRef.current;
+    const pw = el.offsetWidth;
+    const ph = el.offsetHeight;
+    let left = popoverRect.right + 8;
+    if (left + pw > window.innerWidth) left = popoverRect.left - pw - 8;
+    let top = popoverRect.top;
+    if (top + ph > window.innerHeight) top = popoverRect.bottom - ph;
+    if (top < 8) top = 8;
+    el.style.left = left + 'px';
+    el.style.top = top + 'px';
+    el.style.opacity = '1';
+  }, [popoverRect]);
+
   useEffect(() => {
     const handler = (e) => { e.preventDefault(); setInstallPrompt(e); };
     window.addEventListener('beforeinstallprompt', handler);
@@ -374,7 +401,15 @@ export default function App() {
               return (
                 <div
                   key={day}
-                  onClick={() => setSelectedDay(isSelected ? null : date)}
+                  onClick={(e) => {
+                    if (isMobile) {
+                      setSelectedDay(isSelected ? null : date);
+                      setPopoverRect(null);
+                    } else {
+                      if (isSelected) { setSelectedDay(null); setPopoverRect(null); }
+                      else { setSelectedDay(date); setPopoverRect(e.currentTarget.getBoundingClientRect()); }
+                    }
+                  }}
                   style={{
                     borderRadius: 4,
                     padding: "6px 4px",
@@ -400,8 +435,8 @@ export default function App() {
 
         </div>
 
-        {/* ── DAY DETAIL ── */}
-        {selectedDay && (() => {
+        {/* ── DAY DETAIL (mobile: inline below calendar) ── */}
+        {selectedDay && isMobile && (() => {
           const isSunday = selectedDay.getDay() === 0;
           const myShift = getEffectiveShift(selectedTeam, selectedDay);
           const myShiftMeta = SHIFT_META[myShift];
@@ -681,6 +716,73 @@ export default function App() {
           );
         })()}
       </main>
+
+      {/* ── DAY DETAIL POPOVER (desktop) ── */}
+      {selectedDay && !isMobile && popoverRect && (() => {
+        const myShift = getEffectiveShift(selectedTeam, selectedDay);
+        const myShiftMeta = SHIFT_META[myShift];
+        const dayName = selectedDay.toLocaleString("en-US", { weekday: "long" });
+        const dateStr = selectedDay.toLocaleString("en-US", { day: "numeric", month: "long", year: "numeric" });
+        const allTeamRows = TEAM_ORDER.map(team => {
+          const shift = getEffectiveShift(team, selectedDay);
+          return { team, shift, meta: SHIFT_META[shift], isOff: shift === "off" };
+        }).sort((a, b) => { if (a.isOff === b.isOff) return 0; return a.isOff ? 1 : -1; });
+        return (
+          <div ref={popoverRef} style={{
+            position: 'fixed', left: popoverRect.right + 8, top: popoverRect.top,
+            opacity: 0, zIndex: 100,
+            background: T.bg, border: `1px solid ${T.border}`, borderRadius: 6,
+            padding: 20, boxShadow: '0 4px 24px rgba(0,0,0,0.10)',
+            minWidth: 260, maxWidth: 320,
+          }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: T.textSecondary, letterSpacing: "0.10em", textTransform: "uppercase", fontFamily: "'Syne', sans-serif" }}>
+                {dayName} — {dateStr}
+              </div>
+              <button onClick={() => { setSelectedDay(null); setPopoverRect(null); }} style={{ background: "transparent", border: "none", color: T.textMuted, cursor: "pointer", fontSize: 22, lineHeight: 1, padding: 4, marginLeft: 8 }}>×</button>
+            </div>
+            <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, letterSpacing: "0.10em", textTransform: "uppercase", fontFamily: "'Syne', sans-serif", marginBottom: 6 }}>My Shift</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16, padding: "10px 12px", background: T.surface, borderRadius: 4 }}>
+              {myShift === "off" ? (
+                <span style={{ fontSize: 13, color: T.textMuted, fontFamily: "'Syne', sans-serif" }}>😴 Day off</span>
+              ) : (
+                <>
+                  <span style={{ fontSize: 20 }}>{myShiftMeta.icon}</span>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: myShiftMeta.color, fontFamily: "'Syne', sans-serif" }}>{myShiftMeta.label}</span>
+                  <span style={{ fontSize: 12, color: T.textSecondary, fontFamily: "'DM Mono', monospace" }}>{myShiftMeta.time}</span>
+                </>
+              )}
+            </div>
+            <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, letterSpacing: "0.10em", textTransform: "uppercase", fontFamily: "'Syne', sans-serif", marginBottom: 6 }}>Who Is Working</div>
+            <div style={{ display: "flex", flexDirection: "column", border: `1px solid ${T.border}`, borderRadius: 4, overflow: "hidden" }}>
+              {allTeamRows.map(({ team, shift, meta, isOff }) => {
+                const isMyTeam = team === selectedTeam;
+                const tm2 = TEAM_META[team];
+                return (
+                  <div key={team} style={{
+                    display: "flex", alignItems: "center", gap: 10, padding: "9px 12px",
+                    background: isMyTeam ? "rgba(232,53,42,0.06)" : T.bg,
+                    borderLeft: isMyTeam ? "3px solid #E8352A" : "3px solid transparent",
+                    borderBottom: `1px solid ${T.border}`,
+                  }}>
+                    <span style={{ display: "inline-block", width: 9, height: 9, borderRadius: "50%", background: tm2.primary, flexShrink: 0 }} />
+                    <span style={{ fontSize: 11, fontWeight: 700, color: tm2.primary, fontFamily: "'Syne', sans-serif", width: 46, flexShrink: 0 }}>{tm2.name}</span>
+                    {isOff ? (
+                      <span style={{ fontSize: 12, color: T.textMuted, fontFamily: "'Syne', sans-serif" }}>— Day off</span>
+                    ) : (
+                      <>
+                        <span style={{ fontSize: 14 }}>{meta.icon}</span>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: meta.color, fontFamily: "'Syne', sans-serif" }}>{meta.label}</span>
+                        <span style={{ fontSize: 11, color: T.textSecondary, fontFamily: "'DM Mono', monospace" }}>{meta.time}</span>
+                      </>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* ── FOOTER ── */}
       <footer style={{ borderTop: `1px solid ${T.border}`, background: T.surface, padding: isMobile ? "16px" : "20px", marginTop: 40 }}>
