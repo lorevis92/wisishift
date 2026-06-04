@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 // ─── FONTS (same as WisiInvesting) ───────────────────────────────────────────
 const fontLink = document.createElement("link");
@@ -187,6 +187,13 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('wisishift_role', role);
   }, [role]);
+
+  const dayDetailRef = useRef(null);
+  useEffect(() => {
+    if (selectedDay && isMobile && dayDetailRef.current) {
+      dayDetailRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [selectedDay, isMobile]);
 
   useEffect(() => {
     const handler = (e) => { e.preventDefault(); setInstallPrompt(e); };
@@ -393,35 +400,83 @@ export default function App() {
 
         </div>
 
-        {/* ── DAY DETAIL (inline, same style as ExplorePanel) ── */}
+        {/* ── DAY DETAIL ── */}
         {selectedDay && (() => {
-          const shift = getShiftForDate(selectedTeam, selectedDay);
-          const dsm = SHIFT_META[shift];
+          const isSunday = selectedDay.getDay() === 0;
+          const myShift = getEffectiveShift(selectedTeam, selectedDay);
+          const myShiftMeta = SHIFT_META[myShift];
           const dayName = selectedDay.toLocaleString("en-US", { weekday: "long" });
           const dateStr = selectedDay.toLocaleString("en-US", { day: "numeric", month: "long", year: "numeric" });
+
+          const allTeamRows = TEAM_ORDER.map(team => {
+            const shift = getEffectiveShift(team, selectedDay);
+            return { team, shift, meta: SHIFT_META[shift], isOff: shift === "off" };
+          }).sort((a, b) => {
+            if (a.isOff === b.isOff) return 0;
+            return a.isOff ? 1 : -1;
+          });
+
           return (
-            <div style={{ background: T.bg, border: `1px solid ${T.border}`, borderRadius: 6, padding: "24px", marginTop: 16 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
-                <div>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: T.textSecondary, letterSpacing: "0.10em", textTransform: "uppercase", marginBottom: 4, fontFamily: "'Syne', sans-serif", textTransform: "capitalize" }}>
-                    {dayName}
-                  </div>
-                  <div style={{ fontSize: 20, fontWeight: 700, color: T.text, fontFamily: "Georgia, 'Times New Roman', serif", letterSpacing: "0.04em" }}>{dateStr}</div>
+            <div ref={dayDetailRef} style={{ background: T.bg, border: `1px solid ${T.border}`, borderRadius: 6, padding: "24px", marginTop: 16 }}>
+              {/* Header */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: T.textSecondary, letterSpacing: "0.10em", textTransform: "uppercase", fontFamily: "'Syne', sans-serif" }}>
+                  {dayName} — {dateStr}
                 </div>
-                <button onClick={() => setSelectedDay(null)} style={{ background: "transparent", border: "none", color: T.textMuted, cursor: "pointer", fontSize: 22, lineHeight: 1, padding: 4 }}>×</button>
+                <button onClick={() => setSelectedDay(null)} style={{ background: "transparent", border: "none", color: T.textMuted, cursor: "pointer", fontSize: 22, lineHeight: 1, padding: 4, marginLeft: 8 }}>×</button>
               </div>
 
-              <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 20 }}>
-                <span style={{ fontSize: 48 }}>{dsm.icon}</span>
-                <div>
-                  <div style={{ fontSize: 28, fontWeight: 700, color: dsm.color, fontFamily: "Georgia, 'Times New Roman', serif", letterSpacing: "0.04em" }}>{dsm.label}</div>
-                  <div style={{ fontSize: 14, color: T.textSecondary, fontFamily: "'DM Mono', monospace", marginTop: 4 }}>{dsm.time}</div>
-                </div>
+              {/* My Shift */}
+              <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, letterSpacing: "0.10em", textTransform: "uppercase", fontFamily: "'Syne', sans-serif", marginBottom: 8 }}>
+                My Shift
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20, padding: "12px 14px", background: T.surface, borderRadius: 4 }}>
+                {myShift === "off" ? (
+                  <span style={{ fontSize: 14, color: T.textMuted, fontFamily: "'Syne', sans-serif" }}>😴 Day off</span>
+                ) : (
+                  <>
+                    <span style={{ fontSize: 22 }}>{myShiftMeta.icon}</span>
+                    <span style={{ fontSize: 15, fontWeight: 700, color: myShiftMeta.color, fontFamily: "'Syne', sans-serif" }}>{myShiftMeta.label}</span>
+                    <span style={{ fontSize: 13, color: T.textSecondary, fontFamily: "'DM Mono', monospace" }}>{myShiftMeta.time}</span>
+                  </>
+                )}
               </div>
 
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                <ShiftBadge shift={shift} />
-                <TeamBadge team={selectedTeam} />
+              {/* Who is working */}
+              <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, letterSpacing: "0.10em", textTransform: "uppercase", fontFamily: "'Syne', sans-serif", marginBottom: 8 }}>
+                Who Is Working
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 0, border: `1px solid ${T.border}`, borderRadius: 4, overflow: "hidden" }}>
+                {allTeamRows.map(({ team, shift, meta, isOff }) => {
+                  const isMyTeam = team === selectedTeam;
+                  const tm2 = TEAM_META[team];
+                  return (
+                    <div key={team} style={{
+                      display: "flex", alignItems: "center", gap: 12,
+                      padding: "10px 14px",
+                      background: isMyTeam ? "rgba(232,53,42,0.06)" : T.bg,
+                      borderLeft: isMyTeam ? "3px solid #E8352A" : "3px solid transparent",
+                      borderBottom: `1px solid ${T.border}`,
+                    }}>
+                      <span style={{
+                        display: "inline-block", width: 10, height: 10, borderRadius: "50%",
+                        background: tm2.primary, flexShrink: 0,
+                      }} />
+                      <span style={{ fontSize: 11, fontWeight: 700, color: tm2.primary, fontFamily: "'Syne', sans-serif", width: 48, flexShrink: 0 }}>
+                        {tm2.name}
+                      </span>
+                      {isOff ? (
+                        <span style={{ fontSize: 13, color: T.textMuted, fontFamily: "'Syne', sans-serif" }}>— Day off</span>
+                      ) : (
+                        <>
+                          <span style={{ fontSize: 16 }}>{meta.icon}</span>
+                          <span style={{ fontSize: 13, fontWeight: 600, color: meta.color, fontFamily: "'Syne', sans-serif" }}>{meta.label}</span>
+                          <span style={{ fontSize: 12, color: T.textSecondary, fontFamily: "'DM Mono', monospace" }}>{meta.time}</span>
+                        </>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           );
