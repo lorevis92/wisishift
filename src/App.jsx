@@ -76,7 +76,7 @@ const TEAM_META = {
   green:  { primary: "#00996A", light: "rgba(0,153,106,0.06)",  border: "rgba(0,153,106,0.20)",  name: "Green"  },
   blue:   { primary: "#0277BD", light: "rgba(2,119,189,0.06)",  border: "rgba(2,119,189,0.20)",  name: "Blue"   },
   red:    { primary: "#E8352A", light: "rgba(232,53,42,0.06)",  border: "rgba(232,53,42,0.20)",  name: "Red"    },
-  yellow: { primary: "#B87000", light: "rgba(184,112,0,0.06)",  border: "rgba(184,112,0,0.20)",  name: "Yellow" },
+  yellow: { primary: "#C8A800", light: "rgba(200,168,0,0.06)",  border: "rgba(200,168,0,0.20)",  name: "Yellow" },
 };
 
 const SHIFT_META = {
@@ -490,8 +490,8 @@ export default function App() {
 
         {/* ── SHIFT OVERVIEW TABLE ── */}
         {(() => {
-          const teamColors = { green: "#00996A", blue: "#0277BD", red: "#E8352A", yellow: "#B87000" };
-          const teamBg     = { green: "rgba(0,153,106,0.08)", blue: "rgba(2,119,189,0.08)", red: "rgba(232,53,42,0.08)", yellow: "rgba(184,112,0,0.08)" };
+          const teamColors = { green: "#00996A", blue: "#0277BD", red: "#E8352A", yellow: "#C8A800" };
+          const teamBg     = { green: "rgba(0,153,106,0.08)", blue: "rgba(2,119,189,0.08)", red: "rgba(232,53,42,0.08)", yellow: "rgba(200,168,0,0.08)" };
           const renderBadge = (team) => (
             <span key={team} style={{
               background: teamBg[team], color: teamColors[team],
