@@ -277,12 +277,6 @@ export default function App() {
               <span style={{ fontWeight: 800, color: "#E8352A", letterSpacing: "0.10em", textTransform: "uppercase", fontFamily: "'Syne', sans-serif", fontSize: isMobile ? 13 : 16 }}>SHIFT</span>
             </div>
             <TeamBadge team={selectedTeam} />
-            <span style={{
-              background: "#F8F8F8", color: "#666666", border: "1px solid #E8E8E8",
-              fontSize: 10, fontWeight: 700, borderRadius: 3, padding: "2px 6px",
-              textTransform: "uppercase", letterSpacing: "0.08em",
-              fontFamily: "'Syne', sans-serif",
-            }}>{shiftStart.toUpperCase()}</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             {installPrompt && (
