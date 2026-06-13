@@ -88,6 +88,19 @@ const SHIFT_META = {
   night_sunday:   { label: "Night",     short: "NGT", icon: "🌙",  time: "18:00 – 06:00", color: "#6B21A8", bg: "rgba(107,33,168,0.06)", border: "rgba(107,33,168,0.18)" },
 };
 
+function getShiftTimes(shiftType, shiftStart) {
+  if (shiftType === "off") return "Free day";
+  const is5am = shiftStart === "5am";
+  const times = {
+    morning:        is5am ? "05:00 – 13:00" : "06:00 – 14:00",
+    afternoon:      is5am ? "13:00 – 21:00" : "14:00 – 22:00",
+    night:          is5am ? "21:00 – 05:00" : "22:00 – 06:00",
+    morning_sunday: is5am ? "05:00 – 17:00" : "06:00 – 18:00",
+    night_sunday:   is5am ? "17:00 – 05:00" : "18:00 – 06:00",
+  };
+  return times[shiftType] || "—";
+}
+
 function sameDay(a, b) {
   return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
 }
@@ -173,6 +186,7 @@ export default function App() {
   const [installState, setInstallState] = useState('idle');
   const [shiftOverviewOpen, setShiftOverviewOpen] = useState(false);
   const [role, setRole] = useState(() => localStorage.getItem('wisishift_role') || 'opr');
+  const [shiftStart, setShiftStart] = useState(() => localStorage.getItem('wisishift_start') || '6am');
 
   useEffect(() => {
     const handler = () => setIsMobile(window.innerWidth < 640);
@@ -187,6 +201,10 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('wisishift_role', role);
   }, [role]);
+
+  useEffect(() => {
+    localStorage.setItem('wisishift_start', shiftStart);
+  }, [shiftStart]);
 
   const [popoverRect, setPopoverRect] = useState(null);
   const popoverRef = useRef(null);
@@ -221,7 +239,7 @@ export default function App() {
     return () => window.removeEventListener('beforeinstallprompt', handler);
   }, []);
 
-  if (!selectedTeam) return <Onboarding onSelect={setSelectedTeam} today={today} isMobile={isMobile} />;
+  if (!selectedTeam) return <Onboarding onSelect={setSelectedTeam} today={today} isMobile={isMobile} shiftStart={shiftStart} setShiftStart={setShiftStart} />;
 
   const tm = TEAM_META[selectedTeam];
   const monthName = new Date(viewYear, viewMonth, 1).toLocaleString("en-US", { month: "long" });
@@ -259,6 +277,12 @@ export default function App() {
               <span style={{ fontWeight: 800, color: "#E8352A", letterSpacing: "0.10em", textTransform: "uppercase", fontFamily: "'Syne', sans-serif", fontSize: isMobile ? 13 : 16 }}>SHIFT</span>
             </div>
             <TeamBadge team={selectedTeam} />
+            <span style={{
+              background: "#F8F8F8", color: "#666666", border: "1px solid #E8E8E8",
+              fontSize: 10, fontWeight: 700, borderRadius: 3, padding: "2px 6px",
+              textTransform: "uppercase", letterSpacing: "0.08em",
+              fontFamily: "'Syne', sans-serif",
+            }}>{shiftStart.toUpperCase()}</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             {installPrompt && (
@@ -328,7 +352,7 @@ export default function App() {
                   <div style={{ fontSize: 24, fontWeight: 700, color: sm.color, letterSpacing: "0.04em", fontFamily: "Georgia, 'Times New Roman', serif" }}>
                     {sm.label}
                   </div>
-                  <div style={{ fontSize: 13, color: T.textSecondary, fontFamily: "'DM Mono', monospace" }}>{sm.time}</div>
+                  <div style={{ fontSize: 13, color: T.textSecondary, fontFamily: "'DM Mono', monospace" }}>{getShiftTimes(todayShift, shiftStart)}</div>
                 </div>
               </div>
               <ShiftBadge shift={todayShift} />
@@ -659,7 +683,7 @@ export default function App() {
                   <>
                     <span style={{ fontSize: 22 }}>{myShiftMeta.icon}</span>
                     <span style={{ fontSize: 15, fontWeight: 700, color: myShiftMeta.color, fontFamily: "'Syne', sans-serif" }}>{myShiftMeta.label}</span>
-                    <span style={{ fontSize: 13, color: T.textSecondary, fontFamily: "'DM Mono', monospace" }}>{myShiftMeta.time}</span>
+                    <span style={{ fontSize: 13, color: T.textSecondary, fontFamily: "'DM Mono', monospace" }}>{getShiftTimes(myShift, shiftStart)}</span>
                   </>
                 )}
               </div>
@@ -683,7 +707,7 @@ export default function App() {
                         <>
                           <span style={{ fontSize: 16 }}>{meta.icon}</span>
                           <span style={{ fontSize: 13, fontWeight: 600, color: meta.color, fontFamily: "'Syne', sans-serif" }}>{meta.label}</span>
-                          <span style={{ fontSize: 12, color: T.textSecondary, fontFamily: "'DM Mono', monospace" }}>{meta.time}</span>
+                          <span style={{ fontSize: 12, color: T.textSecondary, fontFamily: "'DM Mono', monospace" }}>{getShiftTimes(shift, shiftStart)}</span>
                         </>
                       )}
                     </div>
@@ -727,7 +751,7 @@ export default function App() {
                 <>
                   <span style={{ fontSize: 20 }}>{myShiftMeta.icon}</span>
                   <span style={{ fontSize: 14, fontWeight: 700, color: myShiftMeta.color, fontFamily: "'Syne', sans-serif" }}>{myShiftMeta.label}</span>
-                  <span style={{ fontSize: 12, color: T.textSecondary, fontFamily: "'DM Mono', monospace" }}>{myShiftMeta.time}</span>
+                  <span style={{ fontSize: 12, color: T.textSecondary, fontFamily: "'DM Mono', monospace" }}>{getShiftTimes(myShift, shiftStart)}</span>
                 </>
               )}
             </div>
@@ -751,7 +775,7 @@ export default function App() {
                       <>
                         <span style={{ fontSize: 14 }}>{meta.icon}</span>
                         <span style={{ fontSize: 12, fontWeight: 600, color: meta.color, fontFamily: "'Syne', sans-serif" }}>{meta.label}</span>
-                        <span style={{ fontSize: 11, color: T.textSecondary, fontFamily: "'DM Mono', monospace" }}>{meta.time}</span>
+                        <span style={{ fontSize: 11, color: T.textSecondary, fontFamily: "'DM Mono', monospace" }}>{getShiftTimes(shift, shiftStart)}</span>
                       </>
                     )}
                   </div>
@@ -785,7 +809,8 @@ export default function App() {
 }
 
 // ─── ONBOARDING ───────────────────────────────────────────────────────────────
-function Onboarding({ onSelect, today, isMobile }) {
+function Onboarding({ onSelect, today, isMobile, shiftStart, setShiftStart }) {
+  const shiftToggleBase = { fontFamily: "'Syne', sans-serif", fontSize: 10, fontWeight: 700, textTransform: "uppercase", border: "1px solid #E8E8E8", borderRadius: 3, padding: "4px 10px", cursor: "pointer", letterSpacing: "0.05em" };
   return (
     <div style={{ background: T.bg, minHeight: "100vh", color: T.text, fontFamily: "'Syne', system-ui, sans-serif" }}>
       {/* Header */}
@@ -814,8 +839,17 @@ function Onboarding({ onSelect, today, isMobile }) {
         </div>
 
         {/* Team cards */}
-        <div style={{ fontSize: 11, fontWeight: 700, color: T.textSecondary, letterSpacing: "0.10em", textTransform: "uppercase", marginBottom: 14, fontFamily: "'Syne', sans-serif" }}>
-          What's your team color?
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: T.textSecondary, letterSpacing: "0.10em", textTransform: "uppercase", fontFamily: "'Syne', sans-serif" }}>
+            What's your team color?
+          </div>
+          <div style={{ display: "flex", gap: 4 }}>
+            {['6am', '5am'].map(v => (
+              <button key={v} onClick={() => setShiftStart(v)} style={{ ...shiftToggleBase, background: shiftStart === v ? "#E8352A" : "#F8F8F8", color: shiftStart === v ? "#FFFFFF" : "#666666" }}>
+                {v}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -844,7 +878,7 @@ function Onboarding({ onSelect, today, isMobile }) {
                     <div style={{ fontSize: 12, color: T.textSecondary, marginTop: 3, display: "flex", alignItems: "center", gap: 6 }}>
                       <span>Today:</span>
                       <span style={{ color: sm.color, fontWeight: 700 }}>{sm.icon} {sm.label}</span>
-                      <span style={{ fontFamily: "'DM Mono', monospace", color: T.textMuted }}>{sm.time}</span>
+                      <span style={{ fontFamily: "'DM Mono', monospace", color: T.textMuted }}>{getShiftTimes(todayShift, shiftStart)}</span>
                     </div>
                   </div>
                 </div>
